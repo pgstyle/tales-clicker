@@ -1,0 +1,5 @@
+# Git Ignore
+/.vscode/
+
+/target/
+/tales-clicker/
