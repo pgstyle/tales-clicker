@@ -4,16 +4,16 @@ import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.IntStream;
 
 import javax.imageio.ImageIO;
+
+import org.pgstyle.talesclicker.clicker.TalesClicker;
 
 public final class ConvolutionMask {
 
@@ -74,7 +74,7 @@ public final class ConvolutionMask {
             for (int r = -45; r <= 45; r += 5) {
                 BufferedImage image;
                 try {
-                    image = ImageIO.read(ConvolutionMask.class.getResourceAsStream("/imagedb/mask-" + i + "-0.png"));
+                    image = ImageIO.read(TalesClicker.loadResource("imagedb/mask-" + i + "-0.png"));
                     set.add(ConvolutionMask.fromImage(image, r));
                 } catch (IOException e) {
                     // TODO Auto-generated catch block

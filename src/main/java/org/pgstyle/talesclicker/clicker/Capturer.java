@@ -1,5 +1,7 @@
 package org.pgstyle.talesclicker.clicker;
 
+import java.awt.MouseInfo;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.Toolkit;
@@ -14,8 +16,11 @@ public class Capturer {
     private final Robot robot;
 
     public BufferedImage capture() {
+        Point original = MouseInfo.getPointerInfo().getLocation();
         this.robot.mouseMove(0, 0);
-        return this.robot.createScreenCapture(new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()));
+        BufferedImage capture = this.robot.createScreenCapture(new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()));
+        this.robot.mouseMove(original.x, original.y);
+        return capture;
     }
 
 }

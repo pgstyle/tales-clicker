@@ -7,19 +7,20 @@ import java.awt.image.BufferedImage;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 import javax.imageio.ImageIO;
 
+import org.pgstyle.talesclicker.application.Configuration;
 import org.pgstyle.talesclicker.imagedb.ConvolutionMask;
 import org.pgstyle.talesclicker.imagedb.ErrorCapture;
 import org.pgstyle.talesclicker.imagedb.FullCapture;
@@ -28,8 +29,12 @@ import org.pgstyle.talesclicker.imagedb.PinPadCapture;
 public final class TalesClicker {
     public static final TalesClicker INSTANCE = new TalesClicker();
     
-    public static final DateTimeFormatter DT_FORMATTER = DateTimeFormatter.ofPattern("yyyymmddHHMMssSSS");
-    public static final DateTimeFormatter LOG_FORMATTER = DateTimeFormatter.ofPattern("yyyy-mm-dd'T'HH:MM:ss.SSS");
+    public static final DateTimeFormatter DT_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
+    public static final DateTimeFormatter LOG_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
+
+    public static InputStream loadResource(String name) {
+        return TalesClicker.class.getResourceAsStream("/META-INF/org.pgstyle/tales-clicker/" + name);
+    }
 
     public static void log(String pattern, Object... args) {
         System.out.printf("[" + TalesClicker.LOG_FORMATTER.format(LocalDateTime.now()) + "] " + pattern + "%n", args);
@@ -112,6 +117,7 @@ public final class TalesClicker {
         } catch (IOException e) {}
         try {
             System.setOut(new PrintStream(new RedirectOutputStream(System.out, new FileOutputStream("./tales-clicker/logs/" + System.currentTimeMillis() + ".log"))));
+            System.setErr(System.out);
         } catch (FileNotFoundException e) { e.printStackTrace(); }
         boolean interrupted = false;
         while (!interrupted) {

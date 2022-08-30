@@ -9,6 +9,8 @@ import java.util.Map;
 
 import javax.imageio.ImageIO;
 
+import org.pgstyle.talesclicker.clicker.TalesClicker;
+
 public class PinPadCapture extends Capture {
 
     public static final Point PINPAD_OFFSET = new Point(286, 99);
@@ -19,7 +21,7 @@ public class PinPadCapture extends Capture {
         BufferedImage[] buttons = new BufferedImage[10];
         for (int i = 0; i < buttons.length; i++) {
             try {
-                buttons[i] = ImageIO.read(PinPadCapture.class.getResourceAsStream("/imagedb/button-" + i + ".png"));
+                buttons[i] = ImageIO.read(TalesClicker.loadResource("imagedb/button-" + i + ".png"));
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
