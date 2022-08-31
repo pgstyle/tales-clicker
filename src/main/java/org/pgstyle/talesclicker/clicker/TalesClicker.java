@@ -116,8 +116,10 @@ public final class TalesClicker {
             Files.createDirectories(Paths.get("./tales-clicker/logs"));
         } catch (IOException e) {}
         try {
-            System.setOut(new PrintStream(new RedirectOutputStream(System.out, new FileOutputStream("./tales-clicker/logs/" + System.currentTimeMillis() + ".log"))));
-            System.setErr(System.out);
+            if (Configuration.getConfig().isLogEnabled()) {
+                System.setOut(new PrintStream(new RedirectOutputStream(System.out, new FileOutputStream("./tales-clicker/logs/" + System.currentTimeMillis() + ".log"))));
+                System.setErr(System.out);
+            }
         } catch (FileNotFoundException e) { e.printStackTrace(); }
         boolean interrupted = false;
         while (!interrupted) {

@@ -54,5 +54,13 @@ public final class Configuration {
     }
 
     private final Properties properties;
-    
+
+    public boolean isLogEnabled() {
+        return Boolean.parseBoolean(this.properties.getProperty("application.log.enable"));
+    }
+
+    public boolean isCaptchaEnabled() {
+        return Boolean.parseBoolean(this.properties.getProperty("application.captcha.enable"));
+    }
+
 }
