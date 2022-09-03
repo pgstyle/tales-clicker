@@ -2,15 +2,21 @@ package org.pgstyle.talesclicker.clicker;
 
 import java.awt.Point;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import javax.net.ssl.HttpsURLConnection;
+
 import org.pgstyle.talesclicker.action.Action;
 import org.pgstyle.talesclicker.application.AppUtils;
 import org.pgstyle.talesclicker.application.Application;
 import org.pgstyle.talesclicker.imagedb.ConvolutionMask;
+import org.pgstyle.talesclicker.imagedb.DisconnectCapture;
 import org.pgstyle.talesclicker.imagedb.ErrorCapture;
 import org.pgstyle.talesclicker.imagedb.FullCapture;
 import org.pgstyle.talesclicker.imagedb.PinPadCapture;
@@ -19,6 +25,10 @@ public final class TalesClicker {
     public static final TalesClicker INSTANCE = new TalesClicker();
 
     private TalesClicker() {}
+
+    public boolean isDisconnected() {
+        return DisconnectCapture.fromImage(Action.getCapturer().capture()).isDisconnected();
+    }
 
     public boolean run() {
         String timestamp = AppUtils.timestamp();
@@ -75,6 +85,27 @@ public final class TalesClicker {
         boolean interrupted = false;
         while (!interrupted) {
             boolean hit = TalesClicker.INSTANCE.run();
+            if (TalesClicker.INSTANCE.isDisconnected()) {
+                try {
+                    URL line = new URL("https://api.line.me/v2/bot/message/broadcast");
+                    HttpsURLConnection connection = (HttpsURLConnection) line.openConnection();
+                    connection.setRequestMethod("POST");
+                    connection.addRequestProperty("Content-Type", "application/json;charset=utf-8;encoding=utf-8");
+                    connection.addRequestProperty("Authorization", "Bearer " + System.getenv("LINE_TOKEN"));
+                    connection.setDoOutput(true);
+                    String hostname = System.getenv("HOSTNAME");
+                    byte[] bytes = new byte[1024];
+                    if (Objects.isNull(hostname)) {
+                        int length = Runtime.getRuntime().exec("hostname").getInputStream().read(bytes);
+                        hostname = new String(bytes).substring(0, length);
+                    }
+                    connection.getOutputStream().write(("{ \"messages\":[{\"type\":\"text\", \"text\":\"" + hostname.trim() + " is down\" }]}").getBytes(StandardCharsets.UTF_8));
+                    Application.log("disconnect notice: %d", connection.getResponseCode());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                break;
+            }
             Action.getIdler().idle(hit ? 5000 : 30000);
             if (Thread.interrupted()) {
                 Application.log("Interrupted");

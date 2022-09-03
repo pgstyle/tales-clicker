@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.pgstyle.autoutils</groupId>
     <artifactId>tales-clicker</artifactId>
-    <version>0.6-dev</version>
+    <version>0.7-dev</version>
     <name>tales-clicker</name>
     <description>Auto captcha solver for Tales Runner Online.</description>
     <url>http://github.com/pgstyle/tales-clicker.git</url>
