@@ -9,7 +9,7 @@ import java.util.Map;
 
 import javax.imageio.ImageIO;
 
-import org.pgstyle.talesclicker.clicker.TalesClicker;
+import org.pgstyle.talesclicker.application.AppUtils;
 
 public class PinPadCapture extends Capture {
 
@@ -21,9 +21,8 @@ public class PinPadCapture extends Capture {
         BufferedImage[] buttons = new BufferedImage[10];
         for (int i = 0; i < buttons.length; i++) {
             try {
-                buttons[i] = ImageIO.read(TalesClicker.loadResource("imagedb/button-" + i + ".png"));
+                buttons[i] = ImageIO.read(AppUtils.getResource("imagedb/button-" + i + ".png"));
             } catch (IOException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
@@ -41,11 +40,7 @@ public class PinPadCapture extends Capture {
     public final Point findNumber(int number) {
         BufferedImage image = PinPadCapture.BUTTONS[number];
         Map<Point, Color> map = new HashMap<>();
-        for (int y = 0; y < image.getHeight(); y++) {
-            for (int x = 0; x < image.getWidth(); x++) {
-                map.put(new Point(x, y), new Color(image.getRGB(x, y)));
-            }
-        }
+        AppUtils.loop(0, image.getHeight(), 0, image.getWidth(), (y, x) -> map.put(new Point(x, y), new Color(image.getRGB(x, y))));
         Point point = this.getPointsOffset(map);
         point.translate(23, 23);
         return point;

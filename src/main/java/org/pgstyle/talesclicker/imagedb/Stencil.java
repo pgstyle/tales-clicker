@@ -2,17 +2,14 @@ package org.pgstyle.talesclicker.imagedb;
 
 import java.awt.Color;
 import java.awt.Point;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-import org.pgstyle.talesclicker.clicker.TalesClicker;
+import org.pgstyle.talesclicker.application.AppUtils;
 
 public final class Stencil {
 
@@ -22,7 +19,7 @@ public final class Stencil {
     private static Map<Point, Color> loadReference(String name) {
         Properties list = new Properties();
         try {
-            list.load(TalesClicker.loadResource(name));
+            list.load(AppUtils.getResource(name));
         } catch (IOException e) {
             throw new IllegalArgumentException("unloadable reference: " + name, e);
         }

@@ -1,5 +1,7 @@
 package org.pgstyle.talesclicker.application;
 
+import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -7,8 +9,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
-
-import org.pgstyle.talesclicker.clicker.TalesClicker;
 
 public final class Configuration {
 
@@ -38,7 +38,7 @@ public final class Configuration {
     private static Properties setDefault() {
         Properties properties = new Properties(Configuration.DEFAULT);
         try {
-            properties.load(TalesClicker.loadResource("default-config.properties"));
+            properties.load(AppUtils.getResource("default-config.properties"));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -59,8 +59,34 @@ public final class Configuration {
         return Boolean.parseBoolean(this.properties.getProperty("application.log.enable"));
     }
 
-    public boolean isCaptchaEnabled() {
-        return Boolean.parseBoolean(this.properties.getProperty("application.captcha.enable"));
+    public boolean isCaptchaLogged() {
+        return Boolean.parseBoolean(this.properties.getProperty("application.log.captcha"));
     }
 
+    public boolean isCaptchaEnabled() {
+        return Boolean.parseBoolean(this.properties.getProperty("application.module.captcha.enable"));
+    }
+
+    public int[] getClickTiming() {
+        String[] raw = this.properties.getProperty("application.action.click.timing").split(",");
+        return new int[] {Integer.parseInt(raw[0]), Integer.parseInt(raw[1]), Integer.parseInt(raw[2])};
+    }
+
+    public int[] getCaptureArea() {
+        String raw = this.properties.getProperty("application.action.capture.area");
+        Dimension dimension;
+        if ("FULL".equals(raw.toUpperCase())) {
+            dimension = Toolkit.getDefaultToolkit().getScreenSize();
+        }
+        else {
+            String[] split = raw.split(",");
+            dimension = new Dimension(Integer.parseInt(split[0]), Integer.parseInt(split[1]));
+        }
+        return new int[] {dimension.width, dimension.height};
+    }
+
+    public int[] getTypeTiming() {
+        String[] raw = this.properties.getProperty("application.action.type.timing").split(",");
+        return new int[] {Integer.parseInt(raw[0]), Integer.parseInt(raw[1])};
+    }
 }

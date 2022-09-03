@@ -1,26 +1,15 @@
 package org.pgstyle.talesclicker.clicker;
 
-import java.awt.AWTException;
 import java.awt.Point;
-import java.awt.Robot;
 import java.awt.image.BufferedImage;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import javax.imageio.ImageIO;
-
-import org.pgstyle.talesclicker.application.Configuration;
+import org.pgstyle.talesclicker.action.Action;
+import org.pgstyle.talesclicker.application.AppUtils;
+import org.pgstyle.talesclicker.application.Application;
 import org.pgstyle.talesclicker.imagedb.ConvolutionMask;
 import org.pgstyle.talesclicker.imagedb.ErrorCapture;
 import org.pgstyle.talesclicker.imagedb.FullCapture;
@@ -28,49 +17,29 @@ import org.pgstyle.talesclicker.imagedb.PinPadCapture;
 
 public final class TalesClicker {
     public static final TalesClicker INSTANCE = new TalesClicker();
-    
-    public static final DateTimeFormatter DT_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
-    public static final DateTimeFormatter LOG_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
-    public static InputStream loadResource(String name) {
-        return TalesClicker.class.getResourceAsStream("/META-INF/org.pgstyle/tales-clicker/" + name);
-    }
-
-    public static void log(String pattern, Object... args) {
-        System.out.printf("[" + TalesClicker.LOG_FORMATTER.format(LocalDateTime.now()) + "] " + pattern + "%n", args);
-    }
-
-    private TalesClicker() {
-        try {
-            Robot robot = new Robot();
-            this.capturer = new Capturer(robot);
-            this.clicker = new Clicker(robot);
-        } catch (AWTException e) {
-            throw new IllegalStateException("no windows toolkit", e);
-        }
-    }
-
-    private final Capturer capturer;
-    private final Clicker clicker;
+    private TalesClicker() {}
 
     public boolean run() {
-        String timestamp = TalesClicker.DT_FORMATTER.format(LocalDateTime.now());
-        TalesClicker.log("start: %s", timestamp);
+        String timestamp = AppUtils.timestamp();
+        Application.log("start: %s", timestamp);
         boolean hit = false;
 
-        ErrorCapture error = ErrorCapture.fromImage(this.capturer.capture());
+        
+        BufferedImage screenshot = Action.getCapturer().capture();
+        ErrorCapture error = ErrorCapture.fromImage(screenshot);
         Point errorOffset = error.findOffset();
         hit = Objects.nonNull(errorOffset);
         if (hit) {
-            TalesClicker.log("error hit: %s", errorOffset);
-            this.clicker.click(errorOffset);
+            Application.log("error hit: %s", errorOffset);
+            Action.getClicker().click(errorOffset);
         }
         else {
-            FullCapture full = FullCapture.fromImage(this.capturer.capture());
+            FullCapture full = FullCapture.fromImage(screenshot);
             Point fullOffset = full.findOffset();
             hit = Objects.nonNull(fullOffset);
             if (hit) {
-                TalesClicker.log("captcha hit: %s", fullOffset);
+                Application.log("captcha hit: %s", fullOffset);
                 BufferedImage check = full.getCaptchaCapture().getImage();
                 float[][] confident = ConvolutionMask.convolution(check);
                 List<Float> confidentLeft = new ArrayList<>();
@@ -83,51 +52,32 @@ public final class TalesClicker {
                 }
                 int first = confidentLeft.indexOf(Collections.max(confidentLeft));
                 int second = confidentRight.indexOf(Collections.max(confidentRight));
-                TalesClicker.log("Captcha Number are [%d, %d]", first, second);
-                TalesClicker.log("With Confident of [%f, %f]", confident[0][first], confident[1][second]);
-                LocalDateTime datetime = LocalDateTime.now();
-                try {
-                    ImageIO.write(check, "png", Paths.get("./tales-clicker/captchas/" + TalesClicker.DT_FORMATTER.format(datetime) + ".png").toFile());
-                } catch (IOException e) {
-                    TalesClicker.log("exception when output captcha: %s", e);
-                    e.printStackTrace();
-                }
+                Application.log("Captcha Number are [%d, %d]", first, second);
+                Application.log("With Confident of [%f, %f]", confident[0][first], confident[1][second]);
+                Application.log(check, "captchas/" + timestamp);
                 PinPadCapture pinpad = full.getPinPadCapture();
                 Point firstPoint = pinpad.findNumber(first);
                 firstPoint.translate(fullOffset.x, fullOffset.y);
                 firstPoint.translate(PinPadCapture.PINPAD_OFFSET.x, PinPadCapture.PINPAD_OFFSET.y);
-                clicker.click(firstPoint);
+                Action.getClicker().click(firstPoint);
                 Point secondPoint = pinpad.findNumber(second);
                 secondPoint.translate(fullOffset.x, fullOffset.y);
                 secondPoint.translate(PinPadCapture.PINPAD_OFFSET.x, PinPadCapture.PINPAD_OFFSET.y);
-                clicker.click(secondPoint);
+                Action.getClicker().click(secondPoint);
             }
         }
-        TalesClicker.log("hit: %s", hit);
-        TalesClicker.log("end: %s", timestamp);
+        Application.log("hit: %s", hit);
+        Application.log("end: %s", timestamp);
         return hit;
     }
 
     public static int main(String[] args) {
-        try {
-            Files.createDirectories(Paths.get("./tales-clicker/captchas"));
-        } catch (IOException e) {}
-        try {
-            Files.createDirectories(Paths.get("./tales-clicker/logs"));
-        } catch (IOException e) {}
-        try {
-            if (Configuration.getConfig().isLogEnabled()) {
-                System.setOut(new PrintStream(new RedirectOutputStream(System.out, new FileOutputStream("./tales-clicker/logs/" + System.currentTimeMillis() + ".log"))));
-                System.setErr(System.out);
-            }
-        } catch (FileNotFoundException e) { e.printStackTrace(); }
         boolean interrupted = false;
         while (!interrupted) {
             boolean hit = TalesClicker.INSTANCE.run();
-            try {
-                Thread.sleep(hit ? 5000 : 30000);
-            } catch (InterruptedException e) {
-                TalesClicker.log("Interrupted: ", e.getMessage());
+            Action.getIdler().idle(hit ? 5000 : 30000);
+            if (Thread.interrupted()) {
+                Application.log("Interrupted");
                 interrupted = true;
             }
         }

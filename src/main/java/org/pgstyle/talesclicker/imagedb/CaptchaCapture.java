@@ -2,17 +2,16 @@ package org.pgstyle.talesclicker.imagedb;
 
 import java.awt.image.BufferedImage;
 
+import org.pgstyle.talesclicker.application.AppUtils;
+
 public class CaptchaCapture extends Capture {
 
     public static CaptchaCapture fromImage(BufferedImage image) {
-        for (int y = 0; y < image.getHeight(); ++y) {
-            for (int x = 0; x < image.getWidth(); ++x) {
-                 int argb = image.getRGB(x, y);
-                 int b = argb & 0x000000ff;
-                 b = b > 120 ? 0 : 255;
-                 image.setRGB(x, y, (b << 16) + (b << 8) + b);
-            }
-        }
+        AppUtils.loop(0, image.getHeight(), 0, image.getWidth(), (y, x) -> {
+            int b = image.getRGB(x, y) & 0x000000ff;
+            b = b > 120 ? 0 : 255;
+            image.setRGB(x, y, (b << 16) + (b << 8) + b);
+        });
         return new CaptchaCapture(image);
     }
 

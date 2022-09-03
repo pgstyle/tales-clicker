@@ -9,61 +9,46 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
+import java.util.function.IntFunction;
+import java.util.function.ToIntFunction;
 
 import javax.imageio.ImageIO;
 
-import org.pgstyle.talesclicker.clicker.TalesClicker;
+import org.pgstyle.talesclicker.application.AppUtils;
 
 public final class ConvolutionMask {
 
     public static float[][] convolution(BufferedImage image) {
         float[][] confident = new float[2][10];
         for (int i = 0; i < 10; i++) {
-            float max1 = 0, max2 = 0;
+            float[] max = new float[2];
             for (ConvolutionMask mask : ConvolutionMask.MASKS.get(i)) {
                 float[][] convoluted = mask.convolute(ConvolutionMask.quantify(image, a -> a / 256f));
-                for (int y = 0; y < convoluted[0].length; y++) {
-                    for (int x = 0; x < convoluted.length; x++) {
-                        if (x < convoluted.length / 2) {
-                            if (convoluted[x][y] > max1) {
-                                max1 = convoluted[x][y];
-                            }
-                        }
-                        else {
-                            if (convoluted[x][y] > max2) {
-                                max2 = convoluted[x][y];
-                            }
-                        }
-                    }
-                }
+                AppUtils.loop(0, convoluted[0].length, 0, convoluted.length, (y, x) -> {
+                    int index = x < convoluted.length / 2 ? 0 : 1;
+                    max[index] = Math.max(max[index], convoluted[x][y]);
+                });
             }
-            confident[0][i] = max1;
-            confident[1][i] = max2;
+            confident[0][i] = max[0];
+            confident[1][i] = max[1];
         }
         return confident;
     } 
 
     public static final Map<Integer, Set<ConvolutionMask>> MASKS = ConvolutionMask.createMasks();
 
-    public static float[][] quantify(BufferedImage image, Function<Integer, Float> i2f) {
+    public static float[][] quantify(BufferedImage image, IntFunction<Float> i2f) {
         float[][] quantities = new float[image.getWidth()][image.getHeight()];
-        for (int y = 0; y< image.getHeight(); y++) {
-            for (int x = 0; x < image.getWidth(); x++) {
-                quantities[x][y] = i2f.apply(image.getRGB(x, y) & 0xff);
-            }
-        }
+        AppUtils.loop(0, image.getHeight(), 0, image.getWidth(), (y, x) -> quantities[x][y] = i2f.apply(image.getRGB(x, y) & 0xff));
         return quantities;
     }
 
-    public static BufferedImage unquantify(float[][] quantities, Function<Float, Integer> f2i) {
+    public static BufferedImage unquantify(float[][] quantities, ToIntFunction<Float> f2i) {
         BufferedImage image = new BufferedImage(quantities.length, quantities[0].length, BufferedImage.TYPE_INT_RGB);
-        for (int y = 0; y< image.getHeight(); y++) {
-            for (int x = 0; x < image.getWidth(); x++) {
-                int value = f2i.apply(quantities[x][y]) & 0xff;
-                image.setRGB(x, y, (value << 16) + (value << 8) + value);
-            }
-        }
+        AppUtils.loop(0, image.getHeight(), 0, image.getWidth(), (y, x) -> {
+            int value = f2i.applyAsInt(quantities[x][y]) & 0xff;
+            image.setRGB(x, y, (value << 16) + (value << 8) + value);
+        });
         return image;
     }
 
@@ -74,10 +59,9 @@ public final class ConvolutionMask {
             for (int r = -45; r <= 45; r += 5) {
                 BufferedImage image;
                 try {
-                    image = ImageIO.read(TalesClicker.loadResource("imagedb/mask-" + i + "-0.png"));
+                    image = ImageIO.read(AppUtils.getResource("imagedb/mask-" + i + "-0.png"));
                     set.add(ConvolutionMask.fromImage(image, r));
                 } catch (IOException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }
@@ -113,17 +97,11 @@ public final class ConvolutionMask {
 
     public float[][] convolute(float[][] image) {
         float[][] confident = new float[image.length - this.mask.length][image[0].length - this.mask[0].length];
-        for (int y = 0; y < confident[0].length; y++) {
-            for (int x = 0; x < confident.length; x++) {
-                float sum = 0;
-                for (int j = 0; j < this.mask[0].length; j++) {
-                    for (int i = 0; i < this.mask.length; i++) {
-                        sum += this.mask[i][j] * image[x + i][y + j];
-                    }
-                }
-                confident[x][y] = Math.max(sum / this.weight, 0);
-            }
-        }
+        AppUtils.loop(0, confident[0].length, 0, confident.length, (y, x) -> {
+            float[] sum = new float[1];
+            AppUtils.loop(0, this.mask[0].length, 0, this.mask.length, (j, i) -> sum[0] += this.mask[i][j] * image[x + i][y + j]);
+            confident[x][y] = Math.max(sum[0] / this.weight, 0);
+        });
         return confident;
     }
 
