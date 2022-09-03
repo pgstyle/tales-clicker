@@ -1,10 +1,13 @@
 package org.pgstyle.talesclicker;
 
 import java.awt.AWTException;
+import java.awt.Robot;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.time.LocalDateTime;
 
+import org.pgstyle.talesclicker.clicker.Capturer;
 import org.pgstyle.talesclicker.clicker.TalesClicker;
+import org.pgstyle.talesclicker.imagedb.DisconnectCapture;
 
 public final class Main {
 

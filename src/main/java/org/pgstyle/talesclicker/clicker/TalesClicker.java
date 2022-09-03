@@ -8,6 +8,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
@@ -19,8 +22,10 @@ import java.util.List;
 import java.util.Objects;
 
 import javax.imageio.ImageIO;
+import javax.net.ssl.HttpsURLConnection;
 
 import org.pgstyle.talesclicker.imagedb.ConvolutionMask;
+import org.pgstyle.talesclicker.imagedb.DisconnectCapture;
 import org.pgstyle.talesclicker.imagedb.ErrorCapture;
 import org.pgstyle.talesclicker.imagedb.FullCapture;
 import org.pgstyle.talesclicker.imagedb.PinPadCapture;
@@ -28,8 +33,8 @@ import org.pgstyle.talesclicker.imagedb.PinPadCapture;
 public final class TalesClicker {
     public static final TalesClicker INSTANCE = new TalesClicker();
     
-    public static final DateTimeFormatter DT_FORMATTER = DateTimeFormatter.ofPattern("yyyymmddHHMMssSSS");
-    public static final DateTimeFormatter LOG_FORMATTER = DateTimeFormatter.ofPattern("yyyy-mm-dd'T'HH:MM:ss.SSS");
+    public static final DateTimeFormatter DT_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
+    public static final DateTimeFormatter LOG_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
     public static void log(String pattern, Object... args) {
         System.out.printf("[" + TalesClicker.LOG_FORMATTER.format(LocalDateTime.now()) + "] " + pattern + "%n", args);
@@ -47,6 +52,10 @@ public final class TalesClicker {
 
     private final Capturer capturer;
     private final Clicker clicker;
+
+    public boolean isDisconnected() {
+        return DisconnectCapture.fromImage(this.capturer.capture()).isDisconnected();
+    }
 
     public boolean run() {
         String timestamp = TalesClicker.DT_FORMATTER.format(LocalDateTime.now());
@@ -116,6 +125,27 @@ public final class TalesClicker {
         boolean interrupted = false;
         while (!interrupted) {
             boolean hit = TalesClicker.INSTANCE.run();
+            if (TalesClicker.INSTANCE.isDisconnected()) {
+                try {
+                    URL line = new URL("https://api.line.me/v2/bot/message/broadcast");
+                    HttpsURLConnection connection = (HttpsURLConnection) line.openConnection();
+                    connection.setRequestMethod("POST");
+                    connection.addRequestProperty("Content-Type", "application/json;charset=utf-8;encoding=utf-8");
+                    connection.addRequestProperty("Authorization", "Bearer " + System.getenv("LINE_TOKEN"));
+                    connection.setDoOutput(true);
+                    String hostname = System.getenv("HOSTNAME");
+                    byte[] bytes = new byte[1024];
+                    if (Objects.isNull(hostname)) {
+                        int length = Runtime.getRuntime().exec("hostname").getInputStream().read(bytes);
+                        hostname = new String(bytes).substring(0, length);
+                    }
+                    connection.getOutputStream().write(("{ \"messages\":[{\"type\":\"text\", \"text\":\"" + hostname.trim() + " is down\" }]}").getBytes(StandardCharsets.UTF_8));
+                    TalesClicker.log("disconnect notice: %d", connection.getResponseCode());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                break;
+            }
             try {
                 Thread.sleep(hit ? 5000 : 30000);
             } catch (InterruptedException e) {
