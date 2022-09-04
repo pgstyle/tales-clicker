@@ -10,9 +10,9 @@ import java.util.function.BiConsumer;
 import org.pgstyle.talesclicker.application.Application;
 import org.pgstyle.talesclicker.application.Configuration;
 
-public class Typer {
+public final class Typer {
 
-    public Typer(Robot robot) {
+    Typer(Robot robot) {
         this.robot = robot;
         int[] timing = Configuration.getConfig().getTypeTiming();
         Application.log("loaded configuration: %s", Arrays.toString(timing));

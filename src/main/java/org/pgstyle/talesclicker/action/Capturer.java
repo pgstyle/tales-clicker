@@ -10,9 +10,9 @@ import java.util.Arrays;
 import org.pgstyle.talesclicker.application.Application;
 import org.pgstyle.talesclicker.application.Configuration;
 
-public class Capturer {
+public final class Capturer {
 
-    public Capturer(Robot robot) {
+    Capturer(Robot robot) {
         this.robot = robot;
         int[] dimension = Configuration.getConfig().getCaptureArea();
         Application.log("loaded configuration: %s", Arrays.toString(dimension));
