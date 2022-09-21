@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.function.BiConsumer;
 
 import org.pgstyle.talesclicker.application.Application;
+import org.pgstyle.talesclicker.application.Application.Level;
 import org.pgstyle.talesclicker.application.Configuration;
 
 public final class Clicker {
@@ -14,7 +15,7 @@ public final class Clicker {
     Clicker(Robot robot) {
         this.robot = robot;
         int[] timing = Configuration.getConfig().getClickTiming();
-        Application.log("loaded configuration: %s", Arrays.toString(timing));
+        Application.log(Level.DEBUG, "loaded configuration: %s", Arrays.toString(timing));
         this.moveDelay = timing[0];
         this.clickDelay = timing[1];
         this.actionDelay = timing[2];
@@ -35,8 +36,10 @@ public final class Clicker {
     private final int actionDelay;
 
     public void click(Point point) {
-        Application.log("action.click %s", point);
-        this.action.accept(this.robot, point);
+        synchronized (this.robot) {
+            Application.log(Level.DEBUG, "action.click %s", point);
+            this.action.accept(this.robot, point);
+        }
     }
 
 }

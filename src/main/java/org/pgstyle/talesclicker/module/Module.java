@@ -2,10 +2,14 @@ package org.pgstyle.talesclicker.module;
 
 public interface Module {
 
-    boolean initialise(Environment env);
+    public static long calculateTimeout(double frequency) {
+        return (long) (60000 / frequency);
+    }
 
-    ExecutionState execute();
+    boolean initialise(Environment env, String[] args);
 
-    boolean finalise(ExecutionState state);
+    ModuleControl execute();
+
+    boolean finalise(ModuleControl state);
 
 }

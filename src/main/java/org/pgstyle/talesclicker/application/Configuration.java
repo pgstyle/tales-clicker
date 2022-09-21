@@ -8,7 +8,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Optional;
 import java.util.Properties;
+
+import org.pgstyle.talesclicker.application.Application.Level;
 
 public final class Configuration {
 
@@ -74,19 +78,70 @@ public final class Configuration {
 
     public int[] getCaptureArea() {
         String raw = this.properties.getProperty("application.action.capture.area");
-        Dimension dimension;
-        if ("FULL".equals(raw.toUpperCase())) {
-            dimension = Toolkit.getDefaultToolkit().getScreenSize();
+        int[] area;
+        if ("FULL".equalsIgnoreCase(raw)) {
+            Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+            area = new int[] {0, 0, dimension.width, dimension.height};
         }
         else {
-            String[] split = raw.split(",");
-            dimension = new Dimension(Integer.parseInt(split[0]), Integer.parseInt(split[1]));
+            area = Arrays.stream(raw.split(",")).mapToInt(Integer::parseInt).toArray();
         }
-        return new int[] {dimension.width, dimension.height};
+        return area;
     }
 
     public int[] getTypeTiming() {
         String[] raw = this.properties.getProperty("application.action.type.timing").split(",");
         return new int[] {Integer.parseInt(raw[0]), Integer.parseInt(raw[1])};
     }
+
+    public double getMonitorFrequency() {
+        return Double.parseDouble(this.properties.getProperty("application.module.manager.monitor.frequency"));
+    }
+
+    public double getDetectFrequency() {
+        return Double.parseDouble(this.properties.getProperty("application.module.notifier.detect.frequency"));
+    }
+
+    public double getRetryFrequency() {
+        return Double.parseDouble(this.properties.getProperty("application.module.manager.monitor.frequency"));
+    }
+
+    public Level getLoggingLevel() {
+        return Level.valueOf(this.properties.getProperty("application.log.level"));
+    }
+
+    public boolean isModuleEnabled(String name) {
+        return Boolean.parseBoolean(this.properties.getProperty("application.module." + name + ".enable"));
+    }
+
+    public long getCaptchaDelayShort() {
+        return 1000l * Integer.parseInt(this.properties.getProperty("application.module.captcha.delay.short"));
+    }
+
+    public long getCaptchaDelayLong() {
+        return 1000l * Integer.parseInt(this.properties.getProperty("application.module.captcha.delay.long"));
+    }
+
+    public String getNotifyMethod() {
+        return this.properties.getProperty("application.module.notifier.method");
+    }
+
+    public String getLineToken() {
+        String token = this.properties.getProperty("application.module.notifier.line.token");
+        if (token.startsWith("SysEnv")) {
+            token = System.getenv(token.substring(7));
+        }
+        return token;
+    }
+
+    public String[] getModuleArgs(String name, int index) {
+        String[] args = Optional.ofNullable(this.properties.getProperty("application.module." + name + ".args")).map(s -> s.split(";")).orElse(new String[0]);
+        return args.length > index ? args[index].split(",") : new String[0];
+    }
+
+    public int getModuleCount(String name) {
+        String[] args = Optional.ofNullable(this.properties.getProperty("application.module." + name + ".args")).map(s -> s.split(";")).orElse(new String[0]);
+        return Math.max(args.length, 1);
+    }
+
 }

@@ -1,8 +1,11 @@
-package org.pgstyle.talesclicker.imagedb;
+package org.pgstyle.talesclicker.module.captcha;
 
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.util.Optional;
+
+import org.pgstyle.talesclicker.imagedb.Capture;
+import org.pgstyle.talesclicker.imagedb.Stencil;
 
 public class ErrorCapture extends Capture {
 
@@ -15,7 +18,7 @@ public class ErrorCapture extends Capture {
     }
 
     public Point findOffset() {
-        Point offset = this.getPointsOffset(Stencil.ERROR_REFERENCES);
+        Point offset = this.getPointsOffset(Stencil.ERROR_STENCIL);
         Optional.ofNullable(offset).ifPresent(o -> o.translate(36, 15));
         return offset;
     }

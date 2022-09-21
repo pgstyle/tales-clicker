@@ -1,8 +1,9 @@
-package org.pgstyle.talesclicker.imagedb;
+package org.pgstyle.talesclicker.module.captcha;
 
 import java.awt.image.BufferedImage;
 
 import org.pgstyle.talesclicker.application.AppUtils;
+import org.pgstyle.talesclicker.imagedb.Capture;
 
 public class CaptchaCapture extends Capture {
 

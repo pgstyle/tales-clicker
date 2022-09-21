@@ -1,8 +1,11 @@
-package org.pgstyle.talesclicker.imagedb;
+package org.pgstyle.talesclicker.module.captcha;
 
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.util.Objects;
+
+import org.pgstyle.talesclicker.imagedb.Capture;
+import org.pgstyle.talesclicker.imagedb.Stencil;
 
 public class FullCapture extends Capture {
 
@@ -25,7 +28,7 @@ public class FullCapture extends Capture {
     }
 
     public Point findOffset() {
-        return this.getPointsOffset(Stencil.STENCIL_REFERENCES);
+        return this.getPointsOffset(Stencil.CAPTCHA_STENCIL);
     }
 
 }

@@ -1,4 +1,4 @@
-package org.pgstyle.talesclicker.imagedb;
+package org.pgstyle.talesclicker.module.captcha;
 
 import java.awt.Color;
 import java.awt.Point;
@@ -10,6 +10,7 @@ import java.util.Map;
 import javax.imageio.ImageIO;
 
 import org.pgstyle.talesclicker.application.AppUtils;
+import org.pgstyle.talesclicker.imagedb.Capture;
 
 public class PinPadCapture extends Capture {
 
@@ -42,6 +43,7 @@ public class PinPadCapture extends Capture {
         Map<Point, Color> map = new HashMap<>();
         AppUtils.loop(0, image.getHeight(), 0, image.getWidth(), (y, x) -> map.put(new Point(x, y), new Color(image.getRGB(x, y))));
         Point point = this.getPointsOffset(map);
+        point.translate(PinPadCapture.PINPAD_OFFSET.x, PinPadCapture.PINPAD_OFFSET.y);
         point.translate(23, 23);
         return point;
     }

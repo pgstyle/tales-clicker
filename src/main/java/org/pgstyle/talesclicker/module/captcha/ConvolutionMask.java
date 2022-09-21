@@ -1,4 +1,4 @@
-package org.pgstyle.talesclicker.imagedb;
+package org.pgstyle.talesclicker.module.captcha;
 
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
@@ -15,6 +15,8 @@ import java.util.function.ToIntFunction;
 import javax.imageio.ImageIO;
 
 import org.pgstyle.talesclicker.application.AppUtils;
+import org.pgstyle.talesclicker.application.Application;
+import org.pgstyle.talesclicker.application.Application.Level;
 
 public final class ConvolutionMask {
 
@@ -35,7 +37,7 @@ public final class ConvolutionMask {
         return confident;
     } 
 
-    public static final Map<Integer, Set<ConvolutionMask>> MASKS = ConvolutionMask.createMasks();
+    private static final Map<Integer, Set<ConvolutionMask>> MASKS = ConvolutionMask.createMasks();
 
     public static float[][] quantify(BufferedImage image, IntFunction<Float> i2f) {
         float[][] quantities = new float[image.getWidth()][image.getHeight()];
@@ -53,17 +55,20 @@ public final class ConvolutionMask {
     }
 
     private static Map<Integer, Set<ConvolutionMask>> createMasks() {
+        Application.log(Level.DEBUG, "initialise convolution mask");
         Map<Integer, Set<ConvolutionMask>> map = new HashMap<>();
         for (int i = 0; i < 10; i++) {
             Set<ConvolutionMask> set = new HashSet<>();
-            for (int r = -45; r <= 45; r += 5) {
-                BufferedImage image;
-                try {
-                    image = ImageIO.read(AppUtils.getResource("imagedb/mask-" + i + "-0.png"));
+            BufferedImage image;
+            try {
+                Application.log(Level.DEBUG, "load mask %d", i);
+                image = ImageIO.read(AppUtils.getResource("imagedb/mask-" + i + "-0.png"));
+                for (int r = -45; r <= 45; r += 5) {
                     set.add(ConvolutionMask.fromImage(image, r));
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
+            } catch (IOException e) {
+                Application.log(Level.ERROR, "failed to load mask %d, %s", i, e);
+                e.printStackTrace();
             }
             map.put(i, Collections.unmodifiableSet(set));
         }

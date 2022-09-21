@@ -13,8 +13,8 @@ import org.pgstyle.talesclicker.application.AppUtils;
 
 public final class Stencil {
 
-    public static final Map<Point, Color> STENCIL_REFERENCES = Collections.unmodifiableMap(Stencil.loadReference("imagedb/stencil.list"));
-    public static final Map<Point, Color> ERROR_REFERENCES = Collections.unmodifiableMap(Stencil.loadReference("imagedb/error.list"));
+    public static final Map<Point, Color> CAPTCHA_STENCIL = Collections.unmodifiableMap(Stencil.loadReference("imagedb/captcha.list"));
+    public static final Map<Point, Color> ERROR_STENCIL = Collections.unmodifiableMap(Stencil.loadReference("imagedb/error.list"));
 
     private static Map<Point, Color> loadReference(String name) {
         Properties list = new Properties();

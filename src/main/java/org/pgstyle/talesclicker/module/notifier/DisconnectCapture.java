@@ -1,4 +1,4 @@
-package org.pgstyle.talesclicker.imagedb;
+package org.pgstyle.talesclicker.module.notifier;
 
 import java.awt.Color;
 import java.awt.Point;
@@ -12,21 +12,25 @@ import java.util.stream.IntStream;
 
 import javax.imageio.ImageIO;
 
+import org.pgstyle.talesclicker.application.AppUtils;
+import org.pgstyle.talesclicker.imagedb.Capture;
+import org.pgstyle.talesclicker.imagedb.Stencil;
+
 public class DisconnectCapture extends Capture {
 
-    private static final BufferedImage[] TEXTS = DisconnectCapture.loadButtons();
+    private static final BufferedImage[] TEXTS = DisconnectCapture.loadTexts();
 
-    private static BufferedImage[] loadButtons() {
-        BufferedImage[] buttons = new BufferedImage[2];
-        for (int i = 0; i < buttons.length; i++) {
+    private static BufferedImage[] loadTexts() {
+        BufferedImage[] texts = new BufferedImage[2];
+        for (int i = 0; i < texts.length; i++) {
             try {
-                buttons[i] = ImageIO.read(PinPadCapture.class.getResourceAsStream("/imagedb/disconnect-" + i + ".png"));
+                texts[i] = ImageIO.read(AppUtils.getResource("/imagedb/disconnect-" + i + ".png"));
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
-        return buttons;
+        return texts;
     }
 
     public static DisconnectCapture fromImage(BufferedImage image) {
@@ -38,7 +42,7 @@ public class DisconnectCapture extends Capture {
     }
 
     public Point findOffset() {
-        Point offset = this.getPointsOffset(Stencil.ERROR_REFERENCES);
+        Point offset = this.getPointsOffset(Stencil.ERROR_STENCIL);
         Optional.ofNullable(offset).ifPresent(o -> o.translate(36, 15));
         return offset;
     }

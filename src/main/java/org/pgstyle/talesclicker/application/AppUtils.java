@@ -4,6 +4,8 @@ import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
@@ -27,7 +29,17 @@ public final class AppUtils {
         return AppUtils.class.getResourceAsStream("/META-INF/org.pgstyle/tales-clicker/" + name);
     }
 
-    public static String getCallerText(StackTraceElement caller) {
+    public static Class<?> getCallerClass() {
+        try {return Class.forName(Thread.currentThread().getStackTrace()[3].getClassName());} catch (ReflectiveOperationException e) {return null;}
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static Class<?> getTopLevelClass(Class<?> clazz) {
+        return Optional.ofNullable((Class) clazz.getEnclosingClass()).map(AppUtils::getTopLevelClass).orElse((Class) clazz);
+    }
+
+    public static String getCallerText() {
+        StackTraceElement caller = Thread.currentThread().getStackTrace()[3];
         String className = caller.getClassName();
         String packageName = Arrays.stream(className.substring(0, className.lastIndexOf(".")).split("\\."))
                                    .map(s -> s.subSequence(0, 1))

@@ -4,6 +4,7 @@ import java.awt.AWTException;
 import java.awt.Robot;
 
 import org.pgstyle.talesclicker.application.Application;
+import org.pgstyle.talesclicker.application.Application.Level;
 
 public final class Action {
 
@@ -17,7 +18,7 @@ public final class Action {
         try {
             ROBOT = new Robot();
         } catch (AWTException e) {
-            Application.log("failed to create robot: %s", e);
+            Application.log(Level.FATAL, "failed to create robot: %s", e);
             e.printStackTrace();
             throw new IllegalStateException("no windows toolkit", e);
         }
