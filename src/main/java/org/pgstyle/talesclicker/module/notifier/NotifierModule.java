@@ -11,6 +11,13 @@ import org.pgstyle.talesclicker.module.Module;
 import org.pgstyle.talesclicker.module.ModuleControl;
 import org.pgstyle.talesclicker.module.Signal;
 
+/**
+ * The {@code NotifierModule} can detect a specific event with a detector and
+ * send out notification with a notifier.
+ *
+ * @since 0.6-dev
+ * @author PGKan
+ */
 public final class NotifierModule implements Module {
 
     private static final Map<String, Detector> detectors;
@@ -29,12 +36,17 @@ public final class NotifierModule implements Module {
     private Detector detector;
     private Notifier notifier;
     private ModuleControl action;
+    private long detectTimeout;
+    private long retryTimeout;
 
     @Override
     public boolean initialise(Environment env, String[] args) {
+        // load configuration from initialisation arguments
         this.event = args.length > 0 ? args[0] : "null";
-        this.detector = NotifierModule.detectors.get(args.length > 0 ? args[0] : null);
-        this.notifier = NotifierModule.notifiers.get(args.length > 1 ? args[1] : null);
+        this.detector = NotifierModule.detectors.getOrDefault(args.length > 0 ? args[0] : null, NotifierModule.detectors.get(null));
+        this.notifier = NotifierModule.notifiers.getOrDefault(args.length > 1 ? args[1] : null, NotifierModule.notifiers.get(null));
+        this.detectTimeout = Module.calculateTimeout(Configuration.getConfig().getModulePropertyAsReal("notifier", "detect.frequency"));
+        this.retryTimeout = Module.calculateTimeout(Configuration.getConfig().getModulePropertyAsReal("manager", "retry.frequency"));
         switch (args.length > 2 ? args[2] : "null") {
         case "terminate":
             this.action = ModuleControl.terminate(0, Signal.valueOf((args.length > 3 ? args[3] : "TERMINATE").toUpperCase()));
@@ -44,7 +56,7 @@ public final class NotifierModule implements Module {
             break;
         case "continue":
         default:
-            this.action = ModuleControl.next(Module.calculateTimeout(Configuration.getConfig().getDetectFrequency()));
+            this.action = ModuleControl.next(this.detectTimeout);
             break;
         }
         return true;
@@ -59,16 +71,16 @@ public final class NotifierModule implements Module {
             }
             else {
                 Application.log(Level.WARN, "notify failed, will retry");
-                return ModuleControl.next(Module.calculateTimeout(Configuration.getConfig().getRetryFrequency()));
+                return ModuleControl.next(this.retryTimeout);
             }
         }
-        return ModuleControl.next(Module.calculateTimeout(Configuration.getConfig().getDetectFrequency()));
+        return ModuleControl.next(this.detectTimeout);
     }
 
     @Override
-    public boolean finalise(ModuleControl state) {
+    public boolean finalise(ModuleControl control) {
         // NOP
         return true;
     }
-    
+
 }

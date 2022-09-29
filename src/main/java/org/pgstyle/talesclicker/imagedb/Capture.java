@@ -3,14 +3,16 @@ package org.pgstyle.talesclicker.imagedb;
 import java.awt.Color;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.imageio.ImageIO;
-
+/**
+ * Screen capture container with subpicture and point offset utility.
+ *
+ * @since 0.1-dev
+ * @author PGKan
+ */
 public class Capture {
 
     protected Capture(BufferedImage image) {
@@ -19,17 +21,34 @@ public class Capture {
 
     private final BufferedImage image;
 
+    /**
+     * Get the underlying image.
+     *
+     * @return an image
+     */
     public final BufferedImage getImage() {
         return this.image;
     }
 
+    /**
+     * Get a specific area of the underlying image.
+     *
+     * @return an image
+     */
     public final BufferedImage getImage(int x, int y, int width, int height) {
         return this.image.getSubimage(x, y, width, height);
     }
 
+    /**
+     * Find the specified point reference in the underlying image.
+     *
+     * @param pointColors point reference
+     * @return the offset of the point reference; or {@code null} if the point
+     *         reference does not match in the underlying image
+     */
     public Point getPointsOffset(Map<Point, Color> pointColors) {
         List<Point> sortedPoints = new ArrayList<>(pointColors.keySet());
-        sortedPoints.sort((a, b) -> a.y < b.y ? -1 : (a.y == b.y ? (a.x < b.x ? -1 : 1) : 1));
+        sortedPoints.sort(Stencil.POINT_COMPARATOR);
         for (int y = 0; y < this.getImage().getHeight(); y++) {
             for (int x = 0; x < this.getImage().getWidth(); x++) {
                 boolean hit = true;
@@ -45,15 +64,6 @@ public class Capture {
             }
         }
         return null;
-    }
-
-    public void save(File file) {
-        try {
-            ImageIO.write(this.image, "png", file);
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
     }
 
 }

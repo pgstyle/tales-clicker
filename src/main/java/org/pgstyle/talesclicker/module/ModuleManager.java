@@ -19,22 +19,70 @@ import org.pgstyle.talesclicker.application.Application.Level;
 import org.pgstyle.talesclicker.application.Configuration;
 import org.pgstyle.talesclicker.module.ModuleRunner.State;
 
+/**
+ * The {@code ModuleManager} module manages the creation, execution and
+ * termination of all module in the application.
+ *
+ * @since 1.0
+ * @author PGKan
+ */
 public final class ModuleManager implements Module {
 
+    /**
+     * Get the {@code ManagerAPI} object for accessing manager control APIs.
+     * @return the {@code ManagerAPI} object
+     */
     public static ManagerAPI getManagerApi() {
         return ModuleManager.apiInstance;
     }
 
+    /**
+     * The {@code ManagerAPI} is the publicly accessible control API for all
+     * modules to interact with the {@code ModuleManager}.
+     */
     public class ManagerAPI {
 
+        /**
+         * Register a new module to the {@code ModuleManager}, the registered
+         * module will be handled by the {@code ModuleManager}, a dedicated
+         * {@link ModuleRunner} for the module will be created and started.
+         *
+         * @param module the class of the module to be registered
+         * @param args arguments for the module initialisation
+         *             {@link Module#initialise(Environment, String[])} call
+         *             during the start of the {@code ModuleRunner}
+         * @return {@code true} if the module is registered successfully; or
+         *         {@code false} otherwise
+         */
         public boolean register(Class<? extends Module> module, String... args) {
             return this.register(module, 1, args);
         }
 
+        /**
+         * Register a new module to the {@code ModuleManager}, the registered
+         * module will be handled by the {@code ModuleManager}, a dedicated
+         * {@link ModuleRunner} for the module will be created and started.
+         *
+         * @param module the class of the module to be registered
+         * @param count the count of {@code ModuleRunner} instance will be
+         *              created
+         * @param args arguments for the module initialisation
+         *             {@link Module#initialise(Environment, String[])} call
+         *             during the start of the {@code ModuleRunner}
+         * @return {@code true} if the module is registered successfully; or
+         *         {@code false} otherwise
+         */
         public boolean register(Class<? extends Module> module, int count, String... args) {
             return IntStream.range(0, count).map(i -> ModuleManager.this.dynamics.add(new SimpleEntry<>(module, args)) ? 0 : 1).sum() == 0;
-        }        
+        }
 
+        /**
+         * Send shutdown signal to the {@code ModuleManger} to initiate the
+         * shutdown process, the {@code ModuleManager} will shutdown all modules.
+         *
+         * @return {@code true} if the shutdown signal is sent successfully; or
+         *         {@code false} if shutdown is already in progress
+         */
         public boolean shutdown() {
             if (!"true".equals(ModuleManager.this.env.get("shutdown"))) {
                 ModuleManager.this.env.set("shutdown", "true");
@@ -43,22 +91,43 @@ public final class ModuleManager implements Module {
             return false;
         }
 
+        /**
+         * Inform {@code ModuleManger} to use a specific signal to shutdown
+         * instances of a module.
+         *
+         * @param module the class of module to be shutted down
+         * @param signal application signal of the termination of the module
+         */
         public void shutdown(Class<? extends Module> module, Signal signal) {
-            ModuleManager.this.modules.get(module).stream().forEach(r -> r.shutdown(signal));
+            ModuleManager.this.shutdown.add(new SimpleEntry<>(module, signal));
         }
     }
 
     private static ManagerAPI apiInstance;
 
+    /** Application Environment */
     private Environment env;
+    /** All module runners managed by the module manager. */
     private Map<Class<? extends Module>, List<ModuleRunner>> modules;
+    /** Dynamically create module from manager API call. */
     private Queue<Entry<Class<? extends Module>, String[]>> dynamics;
+    /** Module shutdown from manager API call. */
+    private Queue<Entry<Class<? extends Module>, Signal>> shutdown;
+    /** Module name cache */
     private Map<Class<? extends Module>, String> moduleNames;
+    /** execution interval */
+    private long monitorTimeout;
 
     @SuppressWarnings("unchecked")
     @Override
     public boolean initialise(Environment env, String[] args) {
         this.env = env;
+        this.modules = new HashMap<>();
+        this.moduleNames = new HashMap<>();
+        this.dynamics = new LinkedList<>();
+        this.shutdown = new LinkedList<>();
+        this.monitorTimeout = Module.calculateTimeout(Configuration.getConfig().getModulePropertyAsReal("manager", "monitor.frequency"));
+        // initialise environment
         if (this.env.findGlobal("mm")) {
             Application.log(Level.FATAL, "unclean environment: %s", this.env.get("mm"));
             return false;
@@ -66,18 +135,16 @@ public final class ModuleManager implements Module {
         this.env.declareGlobal("mm", Integer.toHexString(this.hashCode()));
         this.env.declare("shutdown", null);
         this.env.declareGlobal("shutdown", null);
-        this.modules = new HashMap<>();
-        this.moduleNames = new HashMap<>();
-        this.dynamics = new LinkedList<>();
+        // load module list
         Properties classes = new Properties();
         try {
-            classes.load(AppUtils.getResource("modules.list"));
-        } catch (IOException e) {
+            classes.load(AppUtils.getResource("/modules.list"));
+        } catch (IOException | IllegalArgumentException e) {
             Application.log(Level.FATAL, "failed to load module list: %s", e);
             e.printStackTrace();
             return false;
         }
-        ModuleManager.apiInstance = this.new ManagerAPI();
+        // register pre-registered modules
         for (Object name : classes.keySet()) {
             if (Configuration.getConfig().isModuleEnabled(name.toString())) {
                 try {
@@ -93,15 +160,21 @@ public final class ModuleManager implements Module {
                 }
             }
         }
+        // open manager API accessor
+        synchronized (ModuleManager.class) {
+            ModuleManager.apiInstance = this.new ManagerAPI();
+        }
         return true;
     }
 
     @Override
     public ModuleControl execute() {
+        // check environment shutdown request
         if (this.env.find("shutdown") && "true".equals(this.env.get("shutdown"))) {
             Application.log(Level.INFO, "Received shutdown signal from environment.");
             return ModuleControl.terminate(0, Signal.TERMINATE);
         }
+        // process pre-registered modules
         for (Entry<Class<? extends Module>, List<ModuleRunner>> entry : this.modules.entrySet()) {
             List<ModuleRunner> runners = entry.getValue();
             for (int i = 0 ; i < runners.size(); i++) {
@@ -118,6 +191,7 @@ public final class ModuleManager implements Module {
                 }
             }
         }
+        // process dynamically registered modules
         while (!this.dynamics.isEmpty()) {
             Entry<Class<? extends Module>, String[]> entry = this.dynamics.poll();
             Application.log(Level.INFO, "Create module runner for [%s] dynamically", entry.getKey().getSimpleName());
@@ -126,7 +200,16 @@ public final class ModuleManager implements Module {
             }
             this.modules.get(entry.getKey()).add(ModuleRunner.of(entry.getKey(), this.env, entry.getValue()));
         }
-        return ModuleControl.next(Module.calculateTimeout(Configuration.getConfig().getMonitorFrequency()));
+        // process shutdown request
+        while (!this.shutdown.isEmpty()) {
+            Entry<Class<? extends Module>, Signal> entry = this.shutdown.poll();
+            Application.log(Level.INFO, "Send shutdown signal to module [%s]", entry.getKey().getSimpleName());
+            for (ModuleRunner runner : this.modules.get(entry.getKey())) {
+                Application.log(Level.INFO, "Send shutdown signal to module runner [%s]", runner.getName());
+                runner.shutdown(entry.getValue());
+            }
+        }
+        return ModuleControl.next(this.monitorTimeout);
     }
 
     @Override
@@ -134,6 +217,7 @@ public final class ModuleManager implements Module {
         int code = state.getSignal().getCode() - Signal.TERMINATE.getCode();
         Application.log(Level.DEBUG, "Signal Code: %d", code);
         Application.log(Level.INFO, "Shutdown modules before terminate module manager");
+        // send shutdown signal to all modules and wait all modules shutdown
         this.modules.entrySet().stream().filter(e -> !e.getValue().isEmpty()).parallel()
         .forEach(e -> {
             Application.log(Level.DEBUG, "Shutdown module [%s]", e.getKey().getSimpleName());
@@ -142,5 +226,5 @@ public final class ModuleManager implements Module {
         });
         return true;
     }
-    
+
 }

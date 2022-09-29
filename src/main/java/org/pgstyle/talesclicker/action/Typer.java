@@ -11,21 +11,26 @@ import org.pgstyle.talesclicker.application.Application;
 import org.pgstyle.talesclicker.application.Application.Level;
 import org.pgstyle.talesclicker.application.Configuration;
 
+/**
+ * Key typer.
+ *
+ * @since 1.0
+ * @author PGKan
+ */
 public final class Typer {
 
     Typer(Robot robot) {
         this.robot = robot;
         int[] timing = Configuration.getConfig().getTypeTiming();
-        Application.log(Level.DEBUG, "loaded configuration: %s", Arrays.toString(timing));
         this.pressDelay = timing[0];
         this.actionDelay = timing[1];
         action = (r, k) -> {
             Arrays.stream(k).forEach(c -> {
                 r.keyPress(c);
-                Action.getIdler().idle(this.pressDelay);
+                Actions.getIdler().idle(this.pressDelay);
             });
             Arrays.stream(k).forEach(r::keyRelease);
-            Action.getIdler().idle(this.actionDelay);
+            Actions.getIdler().idle(this.actionDelay);
         };
     }
 
@@ -34,6 +39,11 @@ public final class Typer {
     private final int pressDelay;
     private final int actionDelay;
 
+    /**
+     * Type the specified key, with key modifier support.
+     *
+     * @param key the key to be typed
+     */
     public void type(String key) {
         synchronized (this.robot) {
             Application.log(Level.DEBUG, "action.type %s", key);

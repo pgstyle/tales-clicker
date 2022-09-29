@@ -12,22 +12,49 @@ import org.pgstyle.talesclicker.application.Application.Level;
 import org.pgstyle.talesclicker.application.Configuration;
 import org.pgstyle.talesclicker.module.ModuleControl.Action;
 
+/**
+ * The {@code ModuleRunner} instantiates and runs a module. It manages the
+ * instantiation of a module and the initialisation-execution-finalisation life
+ * cycle.
+ *
+ * @since 1.0
+ * @author PGKan
+ */
 public final class ModuleRunner extends Thread {
 
+    /**
+     * State of the {@link ModuleRunner} thread.
+     */
     public enum State {
-        INIT, RUNNING, STOP, DEAD;
+        /** The module runner is yet to be initialised. */
+        INIT,
+        /** The module runner is live. */
+        RUNNING,
+        /** The module runner has received a shutdown signal. */
+        STOP,
+        /** The module runner has shutted down. */
+        DEAD;
     }
 
     private static final Map<Class<?>, Integer> SEQUENCES = Collections.synchronizedMap(new HashMap<>());
+    private static final long RETRY_TIMEOUT = Module.calculateTimeout(Configuration.getConfig().getModulePropertyAsReal("manager", "retry.frequency"));
 
     private static Integer getSequence(Class<? extends Module> clazz) {
         ModuleRunner.SEQUENCES.putIfAbsent(clazz, -1);
         return ModuleRunner.SEQUENCES.computeIfPresent(clazz, (c, i) -> i + 1);
     }
 
+    /**
+     * Create a module runner of a module.
+     *
+     * @param module the class of the module to be instantiated
+     * @param env the application environment the runner runs on
+     * @param args the arguments for initialising the module
+     * @return a module runner
+     */
     public static ModuleRunner of(Class<? extends Module> module, Environment env, String[] args) {
         try {
-            return new ModuleRunner(module.newInstance(), env, args);
+            return new ModuleRunner(module.newInstance(), env, Optional.ofNullable(args).orElseGet(() -> new String[0]));
         } catch (ReflectiveOperationException e) {
             Application.log(Level.ERROR, "failed to instantiate module: %s", e);
             e.printStackTrace();
@@ -55,12 +82,22 @@ public final class ModuleRunner extends Thread {
     private State state;
     private Signal signal;
 
+    /**
+     * Get the state of this module runner.
+     * 
+     * @return the state of this runner
+     */
     public State getRunnerState() {
         synchronized (this.module) {
             return this.state;
         }
     }
 
+    /**
+     * Signal this module runner to shutdown.
+     * 
+     * @param signal the shutdown signal
+     */
     public void shutdown(Signal signal) {
         if (this.isAlive()) {
             Application.log(Level.INFO, "runner [%s] received shutdown signal: %s", this.getName(), signal);
@@ -125,6 +162,8 @@ public final class ModuleRunner extends Thread {
         }
         this.state = State.DEAD;
         Application.log(Level.DEBUG, "runner [%s] exited with state: %s", this.getName(), control.getSignal());
+        // for terminate mode, send shutdown signal to module manager after the
+        // module has shutted down to initiate the shutdown process
         if (control.getAction() == Action.TERMINATE) {
             ModuleManager.getManagerApi().shutdown();
         }
@@ -142,7 +181,7 @@ public final class ModuleRunner extends Thread {
     }
 
     private ModuleControl execute() {
-        ModuleControl control = ModuleControl.next(Module.calculateTimeout(Configuration.getConfig().getRetryFrequency()));
+        ModuleControl control = ModuleControl.next(ModuleRunner.RETRY_TIMEOUT);
         try {
             Application.log(Level.TRACE, "%s - start execute", this.module.getClass().getSimpleName());
             control = this.module.execute();
@@ -152,11 +191,12 @@ public final class ModuleRunner extends Thread {
             Application.log(Level.ERROR, "error when executing module, %s", e);
             e.printStackTrace();
         }
+        if (Objects.isNull(control) || control.getDelay() < 0) {
+            Application.log(Level.ERROR, "illegal module control: %s", control);
+            control = ModuleControl.end(0, Signal.FATAL_CONTROL);
+        }
         try {
-            if (Objects.isNull(control) || control.getDelay() < 0) {
-                Application.log(Level.ERROR, "illegal module control: %s", control);
-                control = ModuleControl.end(0, Signal.FATAL_CONTROL);
-            }
+            // handle delay for next execution
             if (control.getDelay() > 0) {
                 synchronized (this.module) {
                     this.module.wait(control.getDelay());
@@ -167,8 +207,6 @@ public final class ModuleRunner extends Thread {
             e.printStackTrace();
             control = ModuleControl.end(0, Signal.INTERRUPTED);
             Thread.currentThread().interrupt();
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
         }
         return this.state != State.STOP ? control : ModuleControl.end(0, this.signal);
     }
