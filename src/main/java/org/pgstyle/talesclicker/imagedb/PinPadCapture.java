@@ -44,7 +44,7 @@ public class PinPadCapture extends Capture {
                 map.put(new Point(x, y), new Color(image.getRGB(x, y)));
             }
         }
-        Point point = this.getPointsOffset(map);
+        Point point = this.getPointsOffset(map, 6f / 256);
         point.translate(23, 23);
         return point;
     }
