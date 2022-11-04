@@ -4,10 +4,10 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.pgstyle.autoutils</groupId>
     <artifactId>tales-clicker</artifactId>
-    <version>0.6-dev</version>
+    <version>1.0</version>
     <name>tales-clicker</name>
     <description>Auto captcha solver for Tales Runner Online.</description>
-    <url>http://github.com/PGKan/tales-clicker.git</url>
+    <url>http://github.com/pgstyle/tales-clicker.git</url>
 
     <properties>
         <!-- Project Configs -->
@@ -22,6 +22,7 @@
     </dependencies>
 
     <build>
+        <finalName>${artifactId}</finalName>
         <plugins>
 
             <!-- Maven Jar Generator -->
@@ -39,7 +40,7 @@
                         </manifestEntries>
                         <manifest>
                             <packageName>${project.artifactId}</packageName>
-                            <mainClass>org.pgstyle.talesclicker.Main</mainClass>
+                            <mainClass>org.pgstyle.talesclicker.main.Main</mainClass>
                             <addClasspath>false</addClasspath>
                         </manifest>
                     </archive>
@@ -124,18 +125,18 @@
                     </goals>
                     <configuration>
                         <outputDirectory>${basedir}/target</outputDirectory>
-                        <resources>          
+                        <resources>
                             <resource>
                                 <directory>scripts</directory>
                             </resource>
-                        </resources>              
-                    </configuration>            
+                        </resources>
+                    </configuration>
                 </execution>
                 </executions>
             </plugin>
 
             <!-- Execute Command -->
-            <!-- <plugin>
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.0.0</version>
@@ -150,14 +151,13 @@
                         <executable>chmod</executable>
                         <arguments>
                             <argument>+x</argument>
-                            <argument>./target/rst-2.jar</argument>
-                            <argument>./target/rst-2.sh</argument>
-                            <argument>./target/rst-2.bat</argument>
+                            <argument>./target/clicker.sh</argument>
+                            <argument>./target/clicker.bat</argument>
                         </arguments>
                     </configuration>
                 </execution>
                 </executions>
-            </plugin> -->
+            </plugin>
         </plugins>
     </build>
 

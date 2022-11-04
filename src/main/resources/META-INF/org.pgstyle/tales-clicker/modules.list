@@ -1,0 +1,2 @@
+captcha=org.pgstyle.talesclicker.module.captcha.CaptchaModule
+notifier=org.pgstyle.talesclicker.module.notifier.NotifierModule
