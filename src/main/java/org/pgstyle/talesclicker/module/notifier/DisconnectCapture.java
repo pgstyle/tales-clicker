@@ -25,7 +25,7 @@ import org.pgstyle.talesclicker.imagedb.Stencil;
  * @since 0.6-dev
  * @author PGKan
  */
-public class DisconnectCapture extends Capture {
+public final class DisconnectCapture extends Capture {
 
     private static final Pattern LOADABLE = Pattern.compile("/imagedb/disconnect-.*\\.png");
     

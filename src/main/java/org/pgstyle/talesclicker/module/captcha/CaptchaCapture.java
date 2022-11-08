@@ -13,7 +13,7 @@ import org.pgstyle.talesclicker.imagedb.Capture;
  * @since 0.4-dev
  * @author PGKan
  */
-public class CaptchaCapture extends Capture {
+public final class CaptchaCapture extends Capture {
 
     /**
      * Create a capture object from an image.

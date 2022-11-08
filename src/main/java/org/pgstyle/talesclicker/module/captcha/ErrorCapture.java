@@ -13,7 +13,7 @@ import org.pgstyle.talesclicker.imagedb.Stencil;
  * @since 0.5-dev
  * @author PGKan
  */
-public class ErrorCapture extends Capture {
+public final class ErrorCapture extends Capture {
 
     /**
      * Create a capture object from an image.

@@ -14,7 +14,7 @@ import org.pgstyle.talesclicker.imagedb.Stencil;
  * @since 0.4-dev
  * @author PGKan
  */
-public class FullCapture extends Capture {
+public final class FullCapture extends Capture {
 
     /**
      * Create a capture object from an image.

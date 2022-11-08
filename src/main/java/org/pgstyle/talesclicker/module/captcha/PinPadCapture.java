@@ -26,7 +26,7 @@ import org.pgstyle.talesclicker.imagedb.Stencil;
  * @since 0.4-dev
  * @author PGKan
  */
-public class PinPadCapture extends Capture {
+public final class PinPadCapture extends Capture {
 
     public static Point getOffset() {
         return new Point(PinPadCapture.PINPAD_OFFSET);
