@@ -10,7 +10,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.Properties;
 
 import org.pgstyle.talesclicker.application.Application.Level;
 
@@ -29,7 +28,7 @@ public final class Configuration {
 
     private static Configuration load() {
         Path path = Paths.get("./tales-clicker/tales-clicker.properties");
-        Properties properties = new Properties(Configuration.DEFAULT);
+        Properties properties = Properties.from(Configuration.DEFAULT);
         if (Files.exists(path)) {
             try (FileInputStream fis = new FileInputStream(path.toFile())) {
                 properties.load(fis);
@@ -48,7 +47,7 @@ public final class Configuration {
     }
 
     private static Properties setDefault() {
-        Properties properties = new Properties(Configuration.DEFAULT);
+        Properties properties = Properties.from();
         try {
             properties.load(AppUtils.getResource("/default-config.properties"));
         } catch (IOException | IllegalArgumentException e) {

@@ -1,6 +1,5 @@
 package org.pgstyle.talesclicker.application;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -11,13 +10,11 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.Writer;
-import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -131,17 +128,17 @@ public final class Properties implements Map<String, String>, Serializable {
 
     private Properties(Map<String, String> defaultProperties) {
         this();
-        this.properties.putAll(Objects.requireNonNull(defaultProperties, "defaultProperties == null"));
+        this.putAll(Objects.requireNonNull(defaultProperties, "defaultProperties == null"));
     }
 
     private final Map<String, String> properties;
     private transient Set<String> newKeys;
 
-    public String getProperties(String key) {
+    public String getProperty(String key) {
         return this.get(key);
     }
 
-    public String getProperties(String key, String defaultValue) {
+    public String getProperty(String key, String defaultValue) {
         return this.getOrDefault(key, defaultValue);
     }
 
@@ -166,10 +163,12 @@ public final class Properties implements Map<String, String>, Serializable {
     public void load(Reader reader) throws IOException {
         java.util.Properties prop = new java.util.Properties();
         prop.load(reader);
-        this.properties.putAll(Properties.from(prop));
+        Properties loaded = Properties.from(prop);
+        loaded.keySet().forEach(this.newKeys::remove);
+        this.properties.putAll(loaded);
     }
 
-    public String setProperties(String key, String value) {
+    public String setProperty(String key, String value) {
         return this.put(key, value);
     }
 
@@ -188,7 +187,7 @@ public final class Properties implements Map<String, String>, Serializable {
             if (this.newKeys.contains(entry.getKey())) {
                 String string = Properties.escape(new SimpleEntry<>(entry.getKey(), ""));
                 string = string.substring(0, string.length() - 1);
-                writer.write(String.format("# \"%s\" is added as default%n", string));
+                writer.write(String.format("# \"%s\" is a new entry%n", string));
             }
             writer.write(Properties.escape(entry));
             writer.write(System.lineSeparator());
