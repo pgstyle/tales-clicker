@@ -49,9 +49,7 @@ public final class PinPadCapture extends Capture {
                                // all candidates are loaded under the imagedb resources with a
                                // name of button-{number}.png
                                return Stencil.fromImage(ImageIO.read(AppUtils.getResource(name)));
-                           } catch (IllegalArgumentException e) {
-                               // not found
-                           } catch (IOException e) {
+                           } catch (IllegalArgumentException | IOException e) {
                                Application.log(Level.ERROR, "failed to load button %s, %s", name, e);
                                e.printStackTrace();
                            }
