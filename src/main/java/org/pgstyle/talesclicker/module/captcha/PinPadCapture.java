@@ -26,7 +26,7 @@ import org.pgstyle.talesclicker.imagedb.Stencil;
  * @since 0.4-dev
  * @author PGKan
  */
-public class PinPadCapture extends Capture {
+public final class PinPadCapture extends Capture {
 
     public static Point getOffset() {
         return new Point(PinPadCapture.PINPAD_OFFSET);
@@ -84,7 +84,7 @@ public class PinPadCapture extends Capture {
      *         is not found
      */
     public final Point findNumber(int number) {
-        Point point = this.getPointsOffset(PinPadCapture.BUTTONS.get(number));
+        Point point = this.getPointsOffset(PinPadCapture.BUTTONS.get(number), 6f / 256);
         if (Objects.nonNull(point)) {
             point.translate(PinPadCapture.PINPAD_OFFSET.x, PinPadCapture.PINPAD_OFFSET.y);
             point.translate(23, 23);

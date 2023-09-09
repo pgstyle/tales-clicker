@@ -25,7 +25,7 @@ import org.pgstyle.talesclicker.module.ModuleControl;
  * @since 0.4-dev
  * @author PGKan
  */
-public class CaptchaModule implements Module {
+public final class CaptchaModule implements Module {
 
     private long shortDelay;
     private long longDelay;

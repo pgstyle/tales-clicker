@@ -25,7 +25,7 @@ import org.pgstyle.talesclicker.imagedb.Stencil;
  * @since 0.6-dev
  * @author PGKan
  */
-public class DisconnectCapture extends Capture {
+public final class DisconnectCapture extends Capture {
 
     private static final Pattern LOADABLE = Pattern.compile("/imagedb/disconnect-.*\\.png");
     
@@ -75,7 +75,7 @@ public class DisconnectCapture extends Capture {
      */
     public boolean isDisconnected() {
         // check all candidates
-        return DisconnectCapture.TEXTS.stream().map(this::getPointsOffset).anyMatch(Objects::nonNull);
+        return DisconnectCapture.TEXTS.stream().map(pc -> this.getPointsOffset(pc, 6f / 256)).anyMatch(Objects::nonNull);
     }
 
 }
