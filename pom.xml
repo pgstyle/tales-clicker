@@ -3,22 +3,23 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.pgstyle.autoutils</groupId>
-    <artifactId>tales-clicker</artifactId>
-    <version>1.0.2</version>
-    <name>tales-clicker</name>
-    <description>Auto captcha solver for Tales Runner Online.</description>
+    <artifactId>tales-clicker-parent</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+    <name>tales-clicker-parent</name>
+    <description>Parent project of TalesClicker.</description>
     <url>http://github.com/pgstyle/tales-clicker.git</url>
 
     <properties>
         <!-- Project Configs -->
+        <revision>1.0.3</revision>
         <encoding>UTF-8</encoding>
         <project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
         <project.resources.sourceEncoding>${encoding}</project.resources.sourceEncoding>
-        <jre.version>8</jre.version>
+        <java.version>8</java.version>
     </properties>
 
     <dependencies>
-        <!-- Standalone program without any runtime dependency -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
@@ -27,160 +28,118 @@
         </dependency>
     </dependencies>
 
+    <modules>
+        <module>application</module>
+    </modules>
+
     <build>
-        <finalName>${artifactId}</finalName>
-        <plugins>
-
-            <!-- Maven Jar Generator -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.4</version>
-                <configuration>
-                    <archive>
-                        <pomPropertiesFile></pomPropertiesFile>
-                        <addMavenDescriptor>false</addMavenDescriptor>
-                        <manifestEntries>
-                            <build-jdk>${jre.version}</build-jdk>
-                            <Source-Repository>${project.url}</Source-Repository>
-                        </manifestEntries>
-                        <manifest>
-                            <packageName>${project.artifactId}</packageName>
-                            <mainClass>org.pgstyle.talesclicker.main.Main</mainClass>
-                            <addClasspath>false</addClasspath>
-                        </manifest>
-                    </archive>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>standalone-build</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- Maven Compiler -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.0</version>
-                <configuration>
-                    <source>${jre.version}</source>
-                    <target>${jre.version}</target>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>compile-project</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- Surefire for testing -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0-M7</version>
-                <executions>
-                    <execution>
-                        <id>default-test</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>test</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- Maven Javadoc Generator -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.1.1</version>
-                <configuration>
-                    <finalName>${project.artifactId}</finalName>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- Maven Source Generator -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>3.2.0</version>
-                <configuration>
-                    <finalName>${project.artifactId}</finalName>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- Maven Resource Copy-->
-            <plugin>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>3.2.0</version>
-                <executions>
-                <execution>
-                    <id>copy-resources</id>
-                    <phase>package</phase>
-                    <goals>
-                        <goal>copy-resources</goal>
-                    </goals>
+        <finalName>${project.artifactId}</finalName>
+        <pluginManagement>
+            <plugins>
+                <!-- Maven Compiler -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.8.0</version>
                     <configuration>
-                        <outputDirectory>${basedir}/target</outputDirectory>
-                        <resources>
-                            <resource>
-                                <directory>scripts</directory>
-                            </resource>
-                        </resources>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
                     </configuration>
-                </execution>
-                </executions>
-            </plugin>
+                    <executions>
+                        <execution>
+                            <id>compile-project</id>
+                            <phase>compile</phase>
+                            <goals>
+                                <goal>compile</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
 
-            <!-- Execute Command -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>3.0.0</version>
-                <executions>
-                <execution>
-                    <id>script-chmod</id>
-                    <phase>package</phase>
-                    <goals>
-                        <goal>exec</goal>
-                    </goals>
+                <!-- Surefire for testing -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.0.0-M7</version>
+                    <executions>
+                        <execution>
+                            <id>default-test</id>
+                            <phase>test</phase>
+                            <goals>
+                                <goal>test</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- Maven Jar Generator -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>2.4</version>
                     <configuration>
-                        <executable>chmod</executable>
-                        <arguments>
-                            <argument>+x</argument>
-                            <argument>./target/clicker.sh</argument>
-                            <argument>./target/clicker.bat</argument>
-                        </arguments>
+                        <archive>
+                            <pomPropertiesFile></pomPropertiesFile>
+                            <manifestEntries>
+                                <build-jdk>${java.version}</build-jdk>
+                                <Source-Repository>${project.url}</Source-Repository>
+                            </manifestEntries>
+                            <manifest>
+                                <packageName>${project.artifactId}</packageName>
+                                <mainClass>${project.groupId}.${local.identifier}.main.Main</mainClass>
+                                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                                <addClasspath>false</addClasspath>
+                            </manifest>
+                        </archive>
                     </configuration>
-                </execution>
-                </executions>
-            </plugin>
-        </plugins>
+                    <executions>
+                        <execution>
+                            <id>standalone-build</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- Maven Javadoc Generator -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.1.1</version>
+                    <configuration>
+                        <finalName>${project.artifactId}</finalName>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>attach-javadocs</id>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- Maven Source Generator -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>3.2.0</version>
+                    <configuration>
+                        <finalName>${project.artifactId}</finalName>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>attach-sources</id>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
 </project>

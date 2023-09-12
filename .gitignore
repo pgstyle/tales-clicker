@@ -1,7 +1,7 @@
 # Git Ignore
 /.vscode/
 
-/target/
+**/target/
 /tales-clicker/
 
 *.log
