@@ -1,0 +1,55 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.pgstyle.autoutils</groupId>
+        <artifactId>tales-clicker-master</artifactId>
+        <version>alpha</version>
+    </parent>
+    <artifactId>tales-clicker-launcher</artifactId>
+    <version>${revision}</version>
+    <name>tales-clicker-launcher</name>
+    <description>launcher of TalesClicker.</description>
+    <url>http://github.com/pgstyle/tales-clicker.git</url>
+
+    <properties>
+        <local.identifier>talesclicker.launcher</local.identifier>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.pgstyle.autoutils</groupId>
+            <artifactId>tales-clicker-lib</artifactId>
+            <version>${project.version}</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/../common/target/tales-clicker-lib.jar</systemPath>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

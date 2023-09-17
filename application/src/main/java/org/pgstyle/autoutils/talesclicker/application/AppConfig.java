@@ -11,7 +11,11 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Optional;
 
-import org.pgstyle.autoutils.talesclicker.application.Application.Level;
+import org.pgstyle.autoutils.talesclicker.common.AppResource;
+import org.pgstyle.autoutils.talesclicker.common.Configuration;
+import org.pgstyle.autoutils.talesclicker.common.Console;
+import org.pgstyle.autoutils.talesclicker.common.Console.Level;
+import org.pgstyle.autoutils.talesclicker.common.Properties;
 
 /**
  * The {@code Configuration} class loads settings from external properties file
@@ -21,35 +25,19 @@ import org.pgstyle.autoutils.talesclicker.application.Application.Level;
  * @since 1.0
  * @author PGKan
  */
-public final class Configuration {
+public final class AppConfig extends Configuration {
 
-    private static final Properties DEFAULT = Configuration.setDefault();
-    private static final Configuration INSTANCE = Configuration.load();
+    private static final Properties DEFAULT = AppConfig.setDefault();
+    private static final AppConfig INSTANCE = AppConfig.load();
 
-    private static Configuration load() {
-        Path path = Paths.get("./tales-clicker/tales-clicker.properties");
-        Properties properties = Properties.from(Configuration.DEFAULT);
-        if (Files.exists(path)) {
-            try (FileInputStream fis = new FileInputStream(path.toFile())) {
-                properties.load(fis);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        else {
-            try (FileOutputStream fos = new FileOutputStream(path.toFile())) {
-                Configuration.DEFAULT.store(fos, "Settings for Tales Clicker");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return new Configuration(properties);
+    private static AppConfig load() {
+        return new AppConfig("./tales-clicker/tales-clicker.properties");
     }
 
     private static Properties setDefault() {
         Properties properties = Properties.empty();
         try {
-            properties.load(AppUtils.getResource("./default-config.properties"));
+            properties.load(AppResource.getResource("./default-config.properties"));
         } catch (IOException | IllegalArgumentException e) {
             e.printStackTrace();
         }
@@ -61,15 +49,13 @@ public final class Configuration {
      *
      * @return the {@code Configuration}
      */
-    public static Configuration getConfig() {
-        return Configuration.INSTANCE;
+    public static AppConfig getConfig() {
+        return AppConfig.INSTANCE;
     }
 
-    private Configuration(Properties properties) {
-        this.properties = properties;
+    private AppConfig(String properties) {
+        super(properties, AppConfig.DEFAULT);
     }
-
-    private final Properties properties;
 
     /**
      * Check if application logging is enabled.
@@ -78,7 +64,7 @@ public final class Configuration {
      *         otherwise
      */
     public boolean isLogEnabled() {
-        return Boolean.parseBoolean(this.properties.getProperty("application.log.enable"));
+        return this.getBoolean("application.log.enable");
     }
 
     /**
@@ -87,7 +73,7 @@ public final class Configuration {
      * @return the application logging level
      */
     public Level getLoggingLevel() {
-        return Level.valueOf(this.properties.getProperty("application.log.level"));
+        return Level.valueOf(this.getString("application.log.level", Level.DEBUG.name()));
     }
 
     /**
@@ -97,7 +83,7 @@ public final class Configuration {
      *         {@code false} otherwise
      */
     public boolean isCaptchaLogged() {
-        return Boolean.parseBoolean(this.properties.getProperty("application.log.captcha"));
+        return this.getBoolean("application.log.captcha");
     }
 
     /**
@@ -105,9 +91,8 @@ public final class Configuration {
      *
      * @return the timing sequence (millisecond)
      */
-    public int[] getClickTiming() {
-        String[] raw = this.properties.getProperty("application.action.click.timing").split(",");
-        return new int[] {Integer.parseInt(raw[0]), Integer.parseInt(raw[1]), Integer.parseInt(raw[2])};
+    public long[] getClickTiming() {
+        return this.getIntegers("application.action.click.timing");
     }
 
     /**
@@ -115,9 +100,8 @@ public final class Configuration {
      *
      * @return the timing sequence (millisecond)
      */
-    public int[] getTypeTiming() {
-        String[] raw = this.properties.getProperty("application.action.type.timing").split(",");
-        return new int[] {Integer.parseInt(raw[0]), Integer.parseInt(raw[1])};
+    public long[] getTypeTiming() {
+        return this.getIntegers("application.action.type.timing");
     }
 
     /**
@@ -125,15 +109,15 @@ public final class Configuration {
      *
      * @return the area sequence
      */
-    public int[] getCaptureArea() {
-        String raw = this.properties.getProperty("application.action.capture.area");
-        int[] area;
+    public long[] getCaptureArea() {
+        String raw = this.getString("application.action.capture.area", "FULL");
+        long[] area;
         if ("FULL".equalsIgnoreCase(raw)) {
             Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
-            area = new int[] {0, 0, dimension.width, dimension.height};
+            area = new long[] {0, 0, dimension.width, dimension.height};
         }
         else {
-            area = Arrays.stream(raw.split(",")).mapToInt(Integer::parseInt).toArray();
+            area = this.getIntegers("application.action.type.timing");
         }
         return area;
     }
@@ -144,7 +128,7 @@ public final class Configuration {
      * @return {@code true} if the module is enabled; or {@code false} otherwise
      */
     public boolean isModuleEnabled(String name) {
-        return Boolean.parseBoolean(this.properties.getProperty("application.module." + name + ".enable"));
+        return this.getBoolean("application.module." + name + ".enable");
     }
 
     /**
@@ -153,8 +137,7 @@ public final class Configuration {
      * @return the module count
      */
     public int getModuleCount(String name) {
-        String[] args = Optional.ofNullable(this.properties.getProperty("application.module." + name + ".args")).map(s -> s.split(";")).orElse(new String[0]);
-        return Math.max(args.length, 1);
+        return Math.max(this.getStringsSet("application.module." + name + ".args").length, 1);
     }
 
     /**
@@ -163,8 +146,8 @@ public final class Configuration {
      * @return the module arguments
      */
     public String[] getModuleArgs(String name, int index) {
-        String[] args = Optional.ofNullable(this.properties.getProperty("application.module." + name + ".args")).map(s -> s.split(";")).orElse(new String[0]);
-        return args.length > index ? args[index].split(",") : new String[0];
+        String[][] argsSet = this.getStringsSet("application.module." + name + ".args");
+        return argsSet.length > index ? argsSet[index] : new String[0];
     }
 
     /**
@@ -176,8 +159,8 @@ public final class Configuration {
      */
     public String getModuleProperty(String module, String name) {
         name = "application.module." + module + "." + name;
-        String value = this.properties.getProperty(name, "");
-        Application.log(Level.DEBUG, "load from property, %s=%s", name, value);
+        String value = this.getString(name, "");
+        Console.log(Level.DEBUG, "load from property, %s=%s", name, value);
         if (value.startsWith("SysEnv ")) {
             String[] parts = value.split(" ");
             value = Optional.ofNullable(System.getenv(parts.length > 1 ? parts[1] : "")).orElse(parts.length > 2 ? parts[2] : "");

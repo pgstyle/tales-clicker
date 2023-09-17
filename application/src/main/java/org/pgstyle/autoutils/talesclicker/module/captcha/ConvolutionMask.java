@@ -14,9 +14,10 @@ import java.util.function.ToIntFunction;
 
 import javax.imageio.ImageIO;
 
-import org.pgstyle.autoutils.talesclicker.application.AppUtils;
-import org.pgstyle.autoutils.talesclicker.application.Application;
-import org.pgstyle.autoutils.talesclicker.application.Application.Level;
+import org.pgstyle.autoutils.talesclicker.common.AppResource;
+import org.pgstyle.autoutils.talesclicker.common.AppUtils;
+import org.pgstyle.autoutils.talesclicker.common.Console;
+import org.pgstyle.autoutils.talesclicker.common.Console.Level;
 
 /**
  * The {@code ConvolutionMask} uses a grey-scale mask of numerical digits to
@@ -89,13 +90,13 @@ public final class ConvolutionMask {
      * @return all created masks
      */
     private static Map<Integer, Set<ConvolutionMask>> createMasks() {
-        Application.log(Level.DEBUG, "initialise convolution mask");
+        Console.log(Level.DEBUG, "initialise convolution mask");
         Map<Integer, Set<ConvolutionMask>> map = new HashMap<>();
         for (int i = 0; i < 10; i++) {
             Set<ConvolutionMask> set = new HashSet<>();
             try {
-                Application.log(Level.DEBUG, "load mask %d", i);
-                BufferedImage image = ImageIO.read(AppUtils.getResource("./imagedb/mask/mask-" + i + ".png"));
+                Console.log(Level.DEBUG, "load mask %d", i);
+                BufferedImage image = ImageIO.read(AppResource.getResource("./imagedb/mask/mask-" + i + ".png"));
                 // create rotated mask at 5 degrees increment, a plus/minus 2.5
                 // degrees discrepancy should be negligible since the
                 // convolution is fuzzy and permit some error
@@ -103,7 +104,7 @@ public final class ConvolutionMask {
                     set.add(ConvolutionMask.fromImage(image, r));
                 }
             } catch (IOException | IllegalArgumentException e) {
-                Application.log(Level.ERROR, "failed to load mask %d, %s", i, e);
+                Console.log(Level.ERROR, "failed to load mask %d, %s", i, e);
                 e.printStackTrace();
             }
             map.put(i, Collections.unmodifiableSet(set));

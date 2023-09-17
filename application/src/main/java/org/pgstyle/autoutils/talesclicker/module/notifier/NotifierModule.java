@@ -4,8 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.pgstyle.autoutils.talesclicker.application.Application;
-import org.pgstyle.autoutils.talesclicker.application.Application.Level;
-import org.pgstyle.autoutils.talesclicker.application.Configuration;
+import org.pgstyle.autoutils.talesclicker.common.Console;
+import org.pgstyle.autoutils.talesclicker.common.Console.Level;
+import org.pgstyle.autoutils.talesclicker.application.AppConfig;
 import org.pgstyle.autoutils.talesclicker.module.Environment;
 import org.pgstyle.autoutils.talesclicker.module.Module;
 import org.pgstyle.autoutils.talesclicker.module.ModuleControl;
@@ -45,8 +46,8 @@ public final class NotifierModule implements Module {
         this.event = args.length > 0 ? args[0] : "null";
         this.detector = NotifierModule.detectors.getOrDefault(args.length > 0 ? args[0] : null, NotifierModule.detectors.get(null));
         this.notifier = NotifierModule.notifiers.getOrDefault(args.length > 1 ? args[1] : null, NotifierModule.notifiers.get(null));
-        this.detectTimeout = Module.calculateTimeout(Configuration.getConfig().getModulePropertyAsReal("notifier", "detect.frequency"));
-        this.retryTimeout = Module.calculateTimeout(Configuration.getConfig().getModulePropertyAsReal("manager", "retry.frequency"));
+        this.detectTimeout = Module.calculateTimeout(AppConfig.getConfig().getModulePropertyAsReal("notifier", "detect.frequency"));
+        this.retryTimeout = Module.calculateTimeout(AppConfig.getConfig().getModulePropertyAsReal("manager", "retry.frequency"));
         switch (args.length > 2 ? args[2] : "null") {
         case "terminate":
             this.action = ModuleControl.terminate(0, Signal.valueOf((args.length > 3 ? args[3] : "TERMINATE").toUpperCase()));
@@ -65,12 +66,12 @@ public final class NotifierModule implements Module {
     @Override
     public ModuleControl execute() {
         if (this.detector.detect()) {
-            Application.log(Level.INFO, "%s detected", this.event);
+            Console.log(Level.INFO, "%s detected", this.event);
             if (this.notifier.notifies(this.detector.message())) {
                 return this.action;
             }
             else {
-                Application.log(Level.WARN, "notify failed, will retry");
+                Console.log(Level.WARN, "notify failed, will retry");
                 return ModuleControl.next(this.retryTimeout);
             }
         }

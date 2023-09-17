@@ -3,8 +3,8 @@ package org.pgstyle.autoutils.talesclicker.action;
 import java.awt.AWTException;
 import java.awt.Robot;
 
-import org.pgstyle.autoutils.talesclicker.application.Application;
-import org.pgstyle.autoutils.talesclicker.application.Application.Level;
+import org.pgstyle.autoutils.talesclicker.common.Console;
+import org.pgstyle.autoutils.talesclicker.common.Console.Level;
 
 /**
  * Robot actions, all robot activities should be perform via action provides by
@@ -26,7 +26,7 @@ public final class Actions {
         try {
             ROBOT = new Robot();
         } catch (AWTException e) {
-            Application.log(Level.FATAL, "failed to create robot: %s", e);
+            Console.log(Level.FATAL, "failed to create robot: %s", e);
             throw new IllegalStateException("no windows toolkit", e);
         }
         CAPTURER = new Capturer(ROBOT);

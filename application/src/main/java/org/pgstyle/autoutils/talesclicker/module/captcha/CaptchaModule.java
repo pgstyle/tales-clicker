@@ -9,10 +9,11 @@ import java.util.List;
 import java.util.Objects;
 
 import org.pgstyle.autoutils.talesclicker.action.Actions;
-import org.pgstyle.autoutils.talesclicker.application.AppUtils;
+import org.pgstyle.autoutils.talesclicker.common.AppUtils;
 import org.pgstyle.autoutils.talesclicker.application.Application;
-import org.pgstyle.autoutils.talesclicker.application.Application.Level;
-import org.pgstyle.autoutils.talesclicker.application.Configuration;
+import org.pgstyle.autoutils.talesclicker.common.Console;
+import org.pgstyle.autoutils.talesclicker.common.Console.Level;
+import org.pgstyle.autoutils.talesclicker.application.AppConfig;
 import org.pgstyle.autoutils.talesclicker.module.Environment;
 import org.pgstyle.autoutils.talesclicker.module.Module;
 import org.pgstyle.autoutils.talesclicker.module.ModuleControl;
@@ -66,16 +67,16 @@ public final class CaptchaModule implements Module {
             confident[i] = Collections.max(list.get(i));
             digits[i] = list.get(i).indexOf(confident[i]);
         }
-        Application.log(Level.INFO, "Captcha Number are %s", Arrays.toString(digits));
-        Application.log(Level.INFO, "With Confident of %s", Arrays.toString(confident));
+        Console.log(Level.INFO, "Captcha Number are %s", Arrays.toString(digits));
+        Console.log(Level.INFO, "With Confident of %s", Arrays.toString(confident));
         return digits;
     }
 
     @Override
     public boolean initialise(Environment env, String[] args) {
         // load timing settings from config
-        this.shortDelay = 1000l * Configuration.getConfig().getModulePropertyAsInteger("captcha", "delay.short");
-        this.longDelay = 1000l * Configuration.getConfig().getModulePropertyAsInteger("captcha", "delay.long");
+        this.shortDelay = 1000l * AppConfig.getConfig().getModulePropertyAsInteger("captcha", "delay.short");
+        this.longDelay = 1000l * AppConfig.getConfig().getModulePropertyAsInteger("captcha", "delay.long");
         return true;
     }
 
@@ -88,7 +89,7 @@ public final class CaptchaModule implements Module {
         ErrorCapture error = ErrorCapture.fromImage(screenshot);
         Point errorOffset = error.findOffset();
         if (Objects.nonNull(errorOffset)) {
-            Application.log(Level.INFO, "found error dialog at %s", errorOffset);
+            Console.log(Level.INFO, "found error dialog at %s", errorOffset);
             Actions.getClicker().click(errorOffset);
             // wait short delay to retry recognition
             return ModuleControl.next(this.shortDelay);
@@ -99,14 +100,14 @@ public final class CaptchaModule implements Module {
         Point fullOffset = full.findOffset();
         if (Objects.nonNull(fullOffset)) {
             String seqNo = AppUtils.timestamp();
-            Application.log(Level.INFO, "found captcha dialog at %s", fullOffset);
-            Application.log(Level.INFO, "captcha event seqNo: %s", seqNo);
+            Console.log(Level.INFO, "found captcha dialog at %s", fullOffset);
+            Console.log(Level.INFO, "captcha event seqNo: %s", seqNo);
             BufferedImage check = full.getCaptchaCapture().getImage();
             Application.log(check, "captchas/" + seqNo);
 
             // solve captcha to the end result
             for (int code : this.tryCaptchaCode(check)) {
-                Application.log(Level.DEBUG, "handle captcha code: %d", code);
+                Console.log(Level.DEBUG, "handle captcha code: %d", code);
                 PinPadCapture pinpad = full.getPinPadCapture();
                 Point buttonOffset = pinpad.findNumber(code);
                 if (Objects.nonNull(buttonOffset)) {
@@ -114,14 +115,14 @@ public final class CaptchaModule implements Module {
                     Actions.getClicker().click(buttonOffset);
                 }
                 else {
-                    Application.log(Level.ERROR, "cannot find pinpad button");
+                    Console.log(Level.ERROR, "cannot find pinpad button");
                     break;
                 }
             }
             // wait short delay in case of failed recognition
             return ModuleControl.next(this.shortDelay);
         }
-        Application.log(Level.DEBUG, "no captcha dialog or error dialog found");
+        Console.log(Level.DEBUG, "no captcha dialog or error dialog found");
         // no dialog found, wait longer delay before next check
         return ModuleControl.next(this.longDelay);
     }

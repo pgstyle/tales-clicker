@@ -3,9 +3,6 @@ package org.pgstyle.autoutils.talesclicker.action;
 import java.awt.Robot;
 import java.util.function.BiConsumer;
 
-import org.pgstyle.autoutils.talesclicker.application.Application;
-import org.pgstyle.autoutils.talesclicker.application.Application.Level;
-
 /**
  * Idler, thread sleeper.
  *

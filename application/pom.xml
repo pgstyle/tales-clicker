@@ -4,8 +4,9 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.pgstyle.autoutils</groupId>
-        <artifactId>tales-clicker-parent</artifactId>
-        <version>1.0.0</version>
+        <artifactId>tales-clicker-master</artifactId>
+        <version>alpha</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>tales-clicker</artifactId>
     <version>${revision}</version>
@@ -17,28 +18,58 @@
         <local.identifier>talesclicker</local.identifier>
     </properties>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.pgstyle.autoutils</groupId>
+            <artifactId>tales-clicker-lib</artifactId>
+            <version>${project.version}</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/../common/target/tales-clicker-lib.jar</systemPath>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+            </plugin>
             <!-- Maven Resource Copy-->
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>3.2.0</version>
                 <executions>
-                <execution>
-                    <id>copy-resources</id>
-                    <phase>package</phase>
-                    <goals>
-                        <goal>copy-resources</goal>
-                    </goals>
-                    <configuration>
-                        <outputDirectory>${basedir}/target</outputDirectory>
-                        <resources>
-                            <resource>
-                                <directory>scripts</directory>
-                            </resource>
-                        </resources>
-                    </configuration>
-                </execution>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>scripts</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
 
@@ -46,23 +77,22 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>3.0.0</version>
                 <executions>
-                <execution>
-                    <id>script-chmod</id>
-                    <phase>package</phase>
-                    <goals>
-                        <goal>exec</goal>
-                    </goals>
-                    <configuration>
-                        <executable>chmod</executable>
-                        <arguments>
-                            <argument>+x</argument>
-                            <argument>./target/clicker.sh</argument>
-                            <argument>./target/clicker.bat</argument>
-                        </arguments>
-                    </configuration>
-                </execution>
+                    <execution>
+                        <id>script-chmod</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>chmod</executable>
+                            <arguments>
+                                <argument>+x</argument>
+                                <argument>./target/clicker.sh</argument>
+                                <argument>./target/clicker.bat</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>

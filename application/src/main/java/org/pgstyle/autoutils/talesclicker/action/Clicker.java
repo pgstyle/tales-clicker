@@ -6,8 +6,9 @@ import java.awt.event.InputEvent;
 import java.util.function.BiConsumer;
 
 import org.pgstyle.autoutils.talesclicker.application.Application;
-import org.pgstyle.autoutils.talesclicker.application.Application.Level;
-import org.pgstyle.autoutils.talesclicker.application.Configuration;
+import org.pgstyle.autoutils.talesclicker.common.Console;
+import org.pgstyle.autoutils.talesclicker.common.Console.Level;
+import org.pgstyle.autoutils.talesclicker.application.AppConfig;
 
 /**
  * Pointer clicker.
@@ -19,7 +20,7 @@ public final class Clicker {
 
     Clicker(Robot robot) {
         this.robot = robot;
-        int[] timing = Configuration.getConfig().getClickTiming();
+        long[] timing = AppConfig.getConfig().getClickTiming();
         this.moveDelay = timing[0];
         this.clickDelay = timing[1];
         this.actionDelay = timing[2];
@@ -35,9 +36,9 @@ public final class Clicker {
 
     private final Robot robot;
     private final BiConsumer<Robot, Point> action;
-    private final int moveDelay;
-    private final int clickDelay;
-    private final int actionDelay;
+    private final long moveDelay;
+    private final long clickDelay;
+    private final long actionDelay;
 
     /**
      * Move the cursor to specific point and click.
@@ -46,7 +47,7 @@ public final class Clicker {
      */
     public void click(Point point) {
         synchronized (this.robot) {
-            Application.log(Level.DEBUG, "action.click %s", point);
+            Console.log(Level.DEBUG, "action.click %s", point);
             // move cursor to clicking position, press down mouse button,
             // and then release mouse button
             this.action.accept(this.robot, point);

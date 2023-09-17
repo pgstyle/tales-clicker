@@ -1,7 +1,7 @@
 package org.pgstyle.autoutils.talesclicker.module.notifier;
 
 import org.pgstyle.autoutils.talesclicker.action.Actions;
-import org.pgstyle.autoutils.talesclicker.application.AppUtils;
+import org.pgstyle.autoutils.talesclicker.common.AppUtils;
 
 /**
  * This class is the modular scheme implementation of a disconnection detector,

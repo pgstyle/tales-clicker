@@ -3,16 +3,16 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.pgstyle.autoutils</groupId>
-    <artifactId>tales-clicker-parent</artifactId>
-    <version>1.0.0</version>
+    <artifactId>tales-clicker-master</artifactId>
+    <version>alpha</version>
     <packaging>pom</packaging>
-    <name>tales-clicker-parent</name>
+    <name>tales-clicker-master</name>
     <description>Parent project of TalesClicker.</description>
     <url>http://github.com/pgstyle/tales-clicker.git</url>
 
     <properties>
         <!-- Project Configs -->
-        <revision>1.0.3</revision>
+        <revision>1.1.0</revision>
         <encoding>UTF-8</encoding>
         <project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
         <project.resources.sourceEncoding>${encoding}</project.resources.sourceEncoding>
@@ -29,7 +29,9 @@
     </dependencies>
 
     <modules>
+        <module>common</module>
         <module>application</module>
+        <module>launcher</module>
     </modules>
 
     <build>
@@ -83,24 +85,16 @@
                             <manifestEntries>
                                 <build-jdk>${java.version}</build-jdk>
                                 <Source-Repository>${project.url}</Source-Repository>
+                                <Class-Path>tales-clicker-lib.jar</Class-Path>
                             </manifestEntries>
                             <manifest>
                                 <packageName>${project.artifactId}</packageName>
                                 <mainClass>${project.groupId}.${local.identifier}.main.Main</mainClass>
                                 <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                                <addClasspath>false</addClasspath>
+                                <addClasspath>true</addClasspath>
                             </manifest>
                         </archive>
                     </configuration>
-                    <executions>
-                        <execution>
-                            <id>standalone-build</id>
-                            <phase>package</phase>
-                            <goals>
-                                <goal>jar</goal>
-                            </goals>
-                        </execution>
-                    </executions>
                 </plugin>
 
                 <!-- Maven Javadoc Generator -->
@@ -137,6 +131,16 @@
                             </goals>
                         </execution>
                     </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>3.2.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>3.0.0</version>
                 </plugin>
             </plugins>
         </pluginManagement>

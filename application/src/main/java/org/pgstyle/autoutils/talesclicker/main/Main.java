@@ -1,7 +1,8 @@
 package org.pgstyle.autoutils.talesclicker.main;
 
 import org.pgstyle.autoutils.talesclicker.application.Application;
-import org.pgstyle.autoutils.talesclicker.application.Application.Level;
+import org.pgstyle.autoutils.talesclicker.common.Console;
+import org.pgstyle.autoutils.talesclicker.common.Console.Level;
 
 /**
  * program entrypoint
@@ -13,7 +14,7 @@ public final class Main {
             System.exit(Application.main(args));
         }
         catch (RuntimeException e) {
-            Application.log(Level.FATAL, "Uncaught exception: %s", e);
+            Console.log(Level.FATAL, "Uncaught exception: %s", e);
             e.printStackTrace();
         }
     }

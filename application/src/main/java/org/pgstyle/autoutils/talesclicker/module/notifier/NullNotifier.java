@@ -1,7 +1,8 @@
 package org.pgstyle.autoutils.talesclicker.module.notifier;
 
 import org.pgstyle.autoutils.talesclicker.application.Application;
-import org.pgstyle.autoutils.talesclicker.application.Application.Level;
+import org.pgstyle.autoutils.talesclicker.common.Console;
+import org.pgstyle.autoutils.talesclicker.common.Console.Level;
 
 /**
  * The {@code NullNotifier} is a placeholder notifier as default notifier to use
@@ -19,9 +20,9 @@ public final class NullNotifier implements Notifier {
      */
     @Override
     public boolean notifies(String payload) {
-        Application.log(Level.WARN, "The NullNotifier should not be use as method of notification, do implement and connect a notifier for notifying the event.");
-        Application.log(Level.DEBUG, "NullNotifier - notifies");
-        Application.log(Level.DEBUG, payload);
+        Console.log(Level.WARN, "The NullNotifier should not be use as method of notification, do implement and connect a notifier for notifying the event.");
+        Console.log(Level.DEBUG, "NullNotifier - notifies");
+        Console.log(Level.DEBUG, payload);
         return true;
     }
 

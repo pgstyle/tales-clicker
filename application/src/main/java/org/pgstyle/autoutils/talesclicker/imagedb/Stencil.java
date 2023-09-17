@@ -12,7 +12,8 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-import org.pgstyle.autoutils.talesclicker.application.AppUtils;
+import org.pgstyle.autoutils.talesclicker.common.AppResource;
+import org.pgstyle.autoutils.talesclicker.common.AppUtils;
 
 /**
  * Point references for finding point offset in a screen capture.
@@ -30,7 +31,7 @@ public final class Stencil {
     private static Map<Point, Color> loadReference(String name) {
         Properties list = new Properties();
         try {
-            list.load(AppUtils.getResource(name));
+            list.load(AppResource.getResource(name));
         } catch (IOException | IllegalArgumentException e) {
             throw new IllegalArgumentException("unloadable reference: " + name, e);
         }

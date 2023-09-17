@@ -2,7 +2,7 @@ package org.pgstyle.autoutils.talesclicker.module.captcha;
 
 import java.awt.image.BufferedImage;
 
-import org.pgstyle.autoutils.talesclicker.application.AppUtils;
+import org.pgstyle.autoutils.talesclicker.common.AppUtils;
 import org.pgstyle.autoutils.talesclicker.imagedb.Capture;
 
 /**

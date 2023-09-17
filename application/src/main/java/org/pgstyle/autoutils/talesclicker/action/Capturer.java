@@ -7,8 +7,9 @@ import java.awt.Robot;
 import java.awt.image.BufferedImage;
 
 import org.pgstyle.autoutils.talesclicker.application.Application;
-import org.pgstyle.autoutils.talesclicker.application.Application.Level;
-import org.pgstyle.autoutils.talesclicker.application.Configuration;
+import org.pgstyle.autoutils.talesclicker.common.Console;
+import org.pgstyle.autoutils.talesclicker.common.Console.Level;
+import org.pgstyle.autoutils.talesclicker.application.AppConfig;
 
 /**
  * Screenshot capturer.
@@ -20,14 +21,14 @@ public final class Capturer {
 
     Capturer(Robot robot) {
         this.robot = robot;
-        this.defaultArea = Configuration.getConfig().getCaptureArea();
+        this.defaultArea = AppConfig.getConfig().getCaptureArea();
     }
 
     private final Robot robot;
-    private final int[] defaultArea;
+    private final long[] defaultArea;
 
     public BufferedImage capture() {
-        return this.capture(defaultArea[0], defaultArea[1], defaultArea[2], defaultArea[3]);
+        return this.capture((int) defaultArea[0], (int) defaultArea[1], (int) defaultArea[2], (int) defaultArea[3]);
     }
 
     /**
@@ -45,7 +46,7 @@ public final class Capturer {
         // actions.
         synchronized (this.robot) {
             Rectangle area = new Rectangle(x, y, width, height);
-            Application.log(Level.DEBUG, "action.capture %s", area);
+            Console.log(Level.DEBUG, "action.capture %s", area);
             Point original = MouseInfo.getPointerInfo().getLocation();
             // Move cursor to buttom-right of the capture area, such that the
             // cursor body is outside of the area.

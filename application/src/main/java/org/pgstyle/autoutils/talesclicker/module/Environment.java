@@ -6,9 +6,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import org.pgstyle.autoutils.talesclicker.application.AppUtils;
-import org.pgstyle.autoutils.talesclicker.application.Application;
-import org.pgstyle.autoutils.talesclicker.application.Application.Level;
+import org.pgstyle.autoutils.talesclicker.common.Classes;
+import org.pgstyle.autoutils.talesclicker.common.Console;
+import org.pgstyle.autoutils.talesclicker.common.Console.Level;
 
 /**
  * An Application Environment hold environment variables in globally accessible
@@ -44,7 +44,7 @@ public final class Environment {
      * @return {@code true} if the variable exists; or {@code false} otherwise
      */
     public synchronized boolean find(String name) {
-        return this.createScope(AppUtils.getTopLevelClass(AppUtils.getCallerClass())).containsKey(name)
+        return this.createScope(Classes.getTopLevelClass(Classes.getCallerClass())).containsKey(name)
             || this.findGlobal(name);
     }
 
@@ -55,7 +55,7 @@ public final class Environment {
      * @return {@code true} if the variable exists; or {@code false} otherwise
      */
     public synchronized boolean findLocal(String name) {
-        return this.createScope(AppUtils.getTopLevelClass(AppUtils.getCallerClass())).containsKey(name);
+        return this.createScope(Classes.getTopLevelClass(Classes.getCallerClass())).containsKey(name);
     }
 
     /**
@@ -77,7 +77,7 @@ public final class Environment {
      * @throws EnvironmentException if the variable does not exist
      */
     public synchronized String get(String name) {
-        Map<String, String> scope = this.createScope(AppUtils.getTopLevelClass(AppUtils.getCallerClass()));
+        Map<String, String> scope = this.createScope(Classes.getTopLevelClass(Classes.getCallerClass()));
         if (scope.containsKey(name)) {
             return scope.get(name);
         }
@@ -108,7 +108,7 @@ public final class Environment {
      */
     public synchronized String set(String name, String value) {
         this.checkRestricted(name);
-        Map<String, String> scope = this.createScope(AppUtils.getTopLevelClass(AppUtils.getCallerClass()));
+        Map<String, String> scope = this.createScope(Classes.getTopLevelClass(Classes.getCallerClass()));
         this.checkDeclare(scope, name);
         scope.put(name, value);
         return scope.get(name);
@@ -138,7 +138,7 @@ public final class Environment {
      * @throws EnvironmentException if the variable already existed
      */
     public synchronized String declare(String name, String value) {
-        Map<String, String> scope = this.createScope(AppUtils.getTopLevelClass(AppUtils.getCallerClass()));
+        Map<String, String> scope = this.createScope(Classes.getTopLevelClass(Classes.getCallerClass()));
         this.checkDuplicate(scope, name);
         scope.put(name, value);
         return scope.get(name);
@@ -168,7 +168,7 @@ public final class Environment {
      */
     public synchronized String release(String name) {
         this.checkRestricted(name);
-        Map<String, String> scope = this.createScope(AppUtils.getTopLevelClass(AppUtils.getCallerClass()));
+        Map<String, String> scope = this.createScope(Classes.getTopLevelClass(Classes.getCallerClass()));
         this.checkDeclare(scope, name);
         String value = scope.get(name);
         scope.remove(name);
@@ -195,8 +195,8 @@ public final class Environment {
      * Release the variable scope of the caller.
      */
     public synchronized void dispose() {
-        Application.log(Level.DEBUG, "dispose environment scope %s", AppUtils.getTopLevelClass(AppUtils.getCallerClass()).getName());
-        Optional.ofNullable(this.scopes.remove(AppUtils.getTopLevelClass(AppUtils.getCallerClass()))).ifPresent(Map::clear);
+        Console.log(Level.DEBUG, "dispose environment scope %s", Classes.getTopLevelClass(Classes.getCallerClass()).getName());
+        Optional.ofNullable(this.scopes.remove(Classes.getTopLevelClass(Classes.getCallerClass()))).ifPresent(Map::clear);
     }
 
     /**
@@ -206,7 +206,7 @@ public final class Environment {
      * @throws EnvironmentException if the variable is restricted
      */
     private void checkRestricted(String name) {
-        if (AppUtils.getTopLevelClass(AppUtils.getCallerClass(1)) == ModuleManager.class) {
+        if (Classes.getTopLevelClass(Classes.getCallerClass(1)) == ModuleManager.class) {
             // only module manager can bypass variable restriction
             return;
         }

@@ -12,9 +12,9 @@ import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
 
-import org.pgstyle.autoutils.talesclicker.application.AppUtils;
-import org.pgstyle.autoutils.talesclicker.application.Application;
-import org.pgstyle.autoutils.talesclicker.application.Application.Level;
+import org.pgstyle.autoutils.talesclicker.common.AppResource;
+import org.pgstyle.autoutils.talesclicker.common.Console;
+import org.pgstyle.autoutils.talesclicker.common.Console.Level;
 import org.pgstyle.autoutils.talesclicker.imagedb.Capture;
 import org.pgstyle.autoutils.talesclicker.imagedb.Stencil;
 
@@ -42,15 +42,15 @@ public final class PinPadCapture extends Capture {
 
 
     private static List<Map<Point, Color>> loadButtons() {
-        return AppUtils.getResources("./imagedb/button")
+        return AppResource.getResources("./imagedb/button")
                        .filter(s -> PinPadCapture.LOADABLE.matcher(s).matches())
                        .map(name -> {
                            try {
                                // all candidates are loaded under the imagedb resources with a
                                // name of button-{number}.png
-                               return Stencil.fromImage(ImageIO.read(AppUtils.getResource(name)));
+                               return Stencil.fromImage(ImageIO.read(AppResource.getResource(name)));
                            } catch (IllegalArgumentException | IOException e) {
-                               Application.log(Level.ERROR, "failed to load button %s, %s", name, e);
+                               Console.log(Level.ERROR, "failed to load button %s, %s", name, e);
                                e.printStackTrace();
                            }
                            return null;

@@ -8,8 +8,9 @@ import java.util.List;
 import java.util.function.BiConsumer;
 
 import org.pgstyle.autoutils.talesclicker.application.Application;
-import org.pgstyle.autoutils.talesclicker.application.Application.Level;
-import org.pgstyle.autoutils.talesclicker.application.Configuration;
+import org.pgstyle.autoutils.talesclicker.common.Console;
+import org.pgstyle.autoutils.talesclicker.common.Console.Level;
+import org.pgstyle.autoutils.talesclicker.application.AppConfig;
 
 /**
  * Key typer.
@@ -21,7 +22,7 @@ public final class Typer {
 
     Typer(Robot robot) {
         this.robot = robot;
-        int[] timing = Configuration.getConfig().getTypeTiming();
+        long[] timing = AppConfig.getConfig().getTypeTiming();
         this.pressDelay = timing[0];
         this.actionDelay = timing[1];
         action = (r, k) -> {
@@ -36,8 +37,8 @@ public final class Typer {
 
     private final Robot robot;
     private final BiConsumer<Robot, int[]> action;
-    private final int pressDelay;
-    private final int actionDelay;
+    private final long pressDelay;
+    private final long actionDelay;
 
     /**
      * Type the specified key, with key modifier support.
@@ -46,7 +47,7 @@ public final class Typer {
      */
     public void type(String key) {
         synchronized (this.robot) {
-            Application.log(Level.DEBUG, "action.type %s", key);
+            Console.log(Level.DEBUG, "action.type %s", key);
             String[] keys = key.toUpperCase().split("[+\\-]");
             List<Integer> codes = new ArrayList<>();
             for (String k : keys) {

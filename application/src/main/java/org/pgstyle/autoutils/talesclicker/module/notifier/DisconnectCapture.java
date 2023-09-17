@@ -12,9 +12,9 @@ import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
 
-import org.pgstyle.autoutils.talesclicker.application.AppUtils;
-import org.pgstyle.autoutils.talesclicker.application.Application;
-import org.pgstyle.autoutils.talesclicker.application.Application.Level;
+import org.pgstyle.autoutils.talesclicker.common.AppResource;
+import org.pgstyle.autoutils.talesclicker.common.Console;
+import org.pgstyle.autoutils.talesclicker.common.Console.Level;
 import org.pgstyle.autoutils.talesclicker.imagedb.Capture;
 import org.pgstyle.autoutils.talesclicker.imagedb.Stencil;
 
@@ -34,17 +34,17 @@ public final class DisconnectCapture extends Capture {
 
 
     private static List<Map<Point, Color>> loadTexts() {
-        return AppUtils.getResources("./imagedb/disconnect")
+        return AppResource.getResources("./imagedb/disconnect")
                        .filter(s -> DisconnectCapture.LOADABLE.matcher(s).matches())
                        .map(name -> {
                            try {
                                // all candidates are loaded under the imagedb resources with a
                                // name of disconnect-{number}.png
-                               return Stencil.fromImage(ImageIO.read(AppUtils.getResource(name)));
+                               return Stencil.fromImage(ImageIO.read(AppResource.getResource(name)));
                            } catch (IllegalArgumentException e) {
                                // not found
                            } catch (IOException e) {
-                               Application.log(Level.ERROR, "failed to load disconnect text %s, %s", name, e);
+                               Console.log(Level.ERROR, "failed to load disconnect text %s, %s", name, e);
                                e.printStackTrace();
                            }
                            return null;

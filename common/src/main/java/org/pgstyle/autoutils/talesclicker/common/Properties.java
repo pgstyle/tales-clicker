@@ -1,4 +1,4 @@
-package org.pgstyle.autoutils.talesclicker.application;
+package org.pgstyle.autoutils.talesclicker.common;
 
 import java.io.IOException;
 import java.io.InputStream;

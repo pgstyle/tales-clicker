@@ -13,10 +13,10 @@ import java.util.Properties;
 import java.util.Queue;
 import java.util.stream.IntStream;
 
-import org.pgstyle.autoutils.talesclicker.application.AppUtils;
-import org.pgstyle.autoutils.talesclicker.application.Application;
-import org.pgstyle.autoutils.talesclicker.application.Application.Level;
-import org.pgstyle.autoutils.talesclicker.application.Configuration;
+import org.pgstyle.autoutils.talesclicker.application.AppConfig;
+import org.pgstyle.autoutils.talesclicker.common.AppResource;
+import org.pgstyle.autoutils.talesclicker.common.Console;
+import org.pgstyle.autoutils.talesclicker.common.Console.Level;
 import org.pgstyle.autoutils.talesclicker.module.ModuleRunner.State;
 
 /**
@@ -126,10 +126,10 @@ public final class ModuleManager implements Module {
         this.moduleNames = new HashMap<>();
         this.dynamics = new LinkedList<>();
         this.shutdown = new LinkedList<>();
-        this.monitorTimeout = Module.calculateTimeout(Configuration.getConfig().getModulePropertyAsReal("manager", "monitor.frequency"));
+        this.monitorTimeout = Module.calculateTimeout(AppConfig.getConfig().getModulePropertyAsReal("manager", "monitor.frequency"));
         // initialise environment
         if (this.env.findGlobal("mm")) {
-            Application.log(Level.FATAL, "unclean environment: %s", this.env.get("mm"));
+            Console.log(Level.FATAL, "unclean environment: %s", this.env.get("mm"));
             return false;
         }
         this.env.declareGlobal("mm", Integer.toHexString(this.hashCode()));
@@ -138,24 +138,24 @@ public final class ModuleManager implements Module {
         // load module list
         Properties classes = new Properties();
         try {
-            classes.load(AppUtils.getResource("./modules.list"));
+            classes.load(AppResource.getResource("./modules.list"));
         } catch (IOException | IllegalArgumentException e) {
-            Application.log(Level.FATAL, "failed to load module list: %s", e);
+            Console.log(Level.FATAL, "failed to load module list: %s", e);
             e.printStackTrace();
             return false;
         }
         // register pre-registered modules
         for (Object name : classes.keySet()) {
-            if (Configuration.getConfig().isModuleEnabled(name.toString())) {
+            if (AppConfig.getConfig().isModuleEnabled(name.toString())) {
                 try {
                     Class<? extends Module> clazz = (Class<? extends Module>) Class.forName(classes.getProperty(name.toString()));
                     if (!this.modules.containsKey(clazz)) {
                         this.modules.put(clazz, new ArrayList<>());
                     }
-                    IntStream.range(0, Configuration.getConfig().getModuleCount(name.toString())).forEach(i -> this.modules.get(clazz).add(null));
+                    IntStream.range(0, AppConfig.getConfig().getModuleCount(name.toString())).forEach(i -> this.modules.get(clazz).add(null));
                     this.moduleNames.put(clazz, name.toString());
                 } catch (ClassNotFoundException e) {
-                    Application.log(Level.WARN, "module class not found: %s", e);
+                    Console.log(Level.WARN, "module class not found: %s", e);
                     e.printStackTrace();
                 }
             }
@@ -171,7 +171,7 @@ public final class ModuleManager implements Module {
     public ModuleControl execute() {
         // check environment shutdown request
         if (this.env.find("shutdown") && "true".equals(this.env.get("shutdown"))) {
-            Application.log(Level.INFO, "Received shutdown signal from environment.");
+            Console.log(Level.INFO, "Received shutdown signal from environment.");
             return ModuleControl.terminate(0, Signal.TERMINATE);
         }
         // process pre-registered modules
@@ -181,12 +181,12 @@ public final class ModuleManager implements Module {
                 ModuleRunner runner = runners.get(i);
                 if (Objects.isNull(runner)) {
                     // load module, instantiate module and its runner
-                    Application.log(Level.INFO, "Create module runner for [%s]", entry.getKey().getSimpleName());
-                    runners.set(i, ModuleRunner.of(entry.getKey(), this.env, Configuration.getConfig().getModuleArgs(this.moduleNames.get(entry.getKey()), i)));
+                    Console.log(Level.INFO, "Create module runner for [%s]", entry.getKey().getSimpleName());
+                    runners.set(i, ModuleRunner.of(entry.getKey(), this.env, AppConfig.getConfig().getModuleArgs(this.moduleNames.get(entry.getKey()), i)));
                 }
                 else if (runner.getRunnerState() == State.INIT) {
                     // start module runner thread
-                    Application.log(Level.INFO, "Start module runner [%s]", runner.getName());
+                    Console.log(Level.INFO, "Start module runner [%s]", runner.getName());
                     runner.start();
                 }
             }
@@ -194,7 +194,7 @@ public final class ModuleManager implements Module {
         // process dynamically registered modules
         while (!this.dynamics.isEmpty()) {
             Entry<Class<? extends Module>, String[]> entry = this.dynamics.poll();
-            Application.log(Level.INFO, "Create module runner for [%s] dynamically", entry.getKey().getSimpleName());
+            Console.log(Level.INFO, "Create module runner for [%s] dynamically", entry.getKey().getSimpleName());
             if (!this.modules.containsKey(entry.getKey())) {
                 this.modules.put(entry.getKey(), new ArrayList<>());
             }
@@ -203,9 +203,9 @@ public final class ModuleManager implements Module {
         // process shutdown request
         while (!this.shutdown.isEmpty()) {
             Entry<Class<? extends Module>, Signal> entry = this.shutdown.poll();
-            Application.log(Level.INFO, "Send shutdown signal to module [%s]", entry.getKey().getSimpleName());
+            Console.log(Level.INFO, "Send shutdown signal to module [%s]", entry.getKey().getSimpleName());
             for (ModuleRunner runner : this.modules.get(entry.getKey())) {
-                Application.log(Level.INFO, "Send shutdown signal to module runner [%s]", runner.getName());
+                Console.log(Level.INFO, "Send shutdown signal to module runner [%s]", runner.getName());
                 runner.shutdown(entry.getValue());
             }
         }
@@ -215,12 +215,12 @@ public final class ModuleManager implements Module {
     @Override
     public boolean finalise(ModuleControl state) {
         int code = state.getSignal().getCode() - Signal.TERMINATE.getCode();
-        Application.log(Level.DEBUG, "Signal Code: %d", code);
-        Application.log(Level.INFO, "Shutdown modules before terminate module manager");
+        Console.log(Level.DEBUG, "Signal Code: %d", code);
+        Console.log(Level.INFO, "Shutdown modules before terminate module manager");
         // send shutdown signal to all modules and wait all modules shutdown
         this.modules.entrySet().stream().filter(e -> !e.getValue().isEmpty()).parallel()
         .forEach(e -> {
-            Application.log(Level.DEBUG, "Shutdown module [%s]", e.getKey().getSimpleName());
+            Console.log(Level.DEBUG, "Shutdown module [%s]", e.getKey().getSimpleName());
             e.getValue().forEach(r -> r.shutdown(state.getSignal()));
             e.getValue().forEach(r -> {try {r.join();} catch (InterruptedException ex) {Thread.currentThread().interrupt();}});
         });

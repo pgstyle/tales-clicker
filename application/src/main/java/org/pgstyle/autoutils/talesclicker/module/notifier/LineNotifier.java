@@ -10,8 +10,9 @@ import java.util.Optional;
 import javax.net.ssl.HttpsURLConnection;
 
 import org.pgstyle.autoutils.talesclicker.application.Application;
-import org.pgstyle.autoutils.talesclicker.application.Application.Level;
-import org.pgstyle.autoutils.talesclicker.application.Configuration;
+import org.pgstyle.autoutils.talesclicker.common.Console;
+import org.pgstyle.autoutils.talesclicker.common.Console.Level;
+import org.pgstyle.autoutils.talesclicker.application.AppConfig;
 
 /**
  * This class is the modular scheme implementation of a line message notifier,
@@ -22,13 +23,13 @@ import org.pgstyle.autoutils.talesclicker.application.Configuration;
  */
 public final class LineNotifier implements Notifier {
 
-    private String token = Configuration.getConfig().getModuleProperty("notifier", "line.token");
+    private String token = AppConfig.getConfig().getModuleProperty("notifier", "line.token");
 
     @Override
     public boolean notifies(String payload) {
-        Application.log(Level.INFO, "send notification to Line");
+        Console.log(Level.INFO, "send notification to Line");
         payload = "{\"messages\":[{\"type\":\"text\",\"text\":\"" + payload + "\"}]}";
-        Application.log(Level.DEBUG, payload);
+        Console.log(Level.DEBUG, payload);
         try {
             // prepare connection
             URL line = new URL("https://api.line.me/v2/bot/message/broadcast");
@@ -43,15 +44,15 @@ public final class LineNotifier implements Notifier {
             int code = connection.getResponseCode();
             switch (code / 100) {
             case 2: // success
-                Application.log(Level.INFO, "notified: %d - %s", code, connection.getResponseMessage());
+                Console.log(Level.INFO, "notified: %d - %s", code, connection.getResponseMessage());
                 return true;
             case 1:
             case 3: // http controls
-                Application.log(Level.WARN, "warning: %d - %s", code, connection.getResponseMessage());
+                Console.log(Level.WARN, "warning: %d - %s", code, connection.getResponseMessage());
                 return true;
             case 4:
             case 5: // http errors
-                Application.log(Level.ERROR, "error: %d - %s", code, connection.getResponseMessage());
+                Console.log(Level.ERROR, "error: %d - %s", code, connection.getResponseMessage());
                 InputStream is = connection.getErrorStream();
                 ByteArrayOutputStream os = new ByteArrayOutputStream(connection.getContentLength() + 4);
                 int length = 0;
@@ -59,14 +60,14 @@ public final class LineNotifier implements Notifier {
                 while ((length = is.read(buffer)) != -1) {
                     os.write(buffer, 0, length);
                 }
-                Application.log(Level.ERROR, os.toString(Optional.ofNullable(connection.getContentEncoding()).orElse("utf-8")));
+                Console.log(Level.ERROR, os.toString(Optional.ofNullable(connection.getContentEncoding()).orElse("utf-8")));
                 return false;
             default:
-                Application.log(Level.WARN, "unknown: %d - %s", code, connection.getResponseMessage());
+                Console.log(Level.WARN, "unknown: %d - %s", code, connection.getResponseMessage());
                 return false;
             }
         } catch (IOException e) {
-            Application.log(Level.ERROR, "failed to send notifies, %s", e);
+            Console.log(Level.ERROR, "failed to send notifies, %s", e);
             e.printStackTrace();
             return false;
         }
