@@ -59,7 +59,7 @@ public final class FullCapture extends Capture {
      *         in the screenshot
      */
     public Point findOffset() {
-        return this.getPointsOffset(Stencil.CAPTCHA_STENCIL);
+        return this.getPointsOffset(Stencil.CAPTCHA_STENCIL, 12f / 256);
     }
 
 }
