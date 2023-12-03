@@ -169,18 +169,17 @@ public final class AppUtils {
     }
 
     private static void findInJar(List<String> files, String path, String target) {
-        Enumeration<JarEntry> entries = null;
         try (JarFile jar = new JarFile(AppUtils.class.getProtectionDomain().getCodeSource().getLocation().getPath())) {
-            entries = jar.entries();
+            Enumeration<JarEntry> entries = jar.entries();
+            while (entries.hasMoreElements()) {
+                String file = entries.nextElement().getName();
+                if (file.length() > target.length() && file.startsWith(target.substring(1))) {
+                    files.add(file.substring(target.length()));
+                }
+            }
         } catch (IOException e) {
             Application.log(Level.ERROR, "unable to read Jar entry: " + path, e);
             throw new IllegalStateException("Jar classpath not available", e);
-        }
-        while (Objects.nonNull(entries) && entries.hasMoreElements()) {
-            String file = entries.nextElement().getName();
-            if (file.length() > target.length() && file.startsWith(target.substring(1))) {
-                files.add(file.substring(target.length()));
-            }
         }
     }
 
