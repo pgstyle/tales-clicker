@@ -64,8 +64,8 @@ public final class Application {
         // load application info from MANIFEST.MF
         console.println("fetch application informations...");
         try {
-            Objects.requireNonNull(APPLICATION = Application.class.getPackage().getImplementationTitle(), "application");
-            Objects.requireNonNull(VERSION = Application.class.getPackage().getImplementationVersion(), "version");
+            APPLICATION = Optional.ofNullable(Application.class.getPackage().getImplementationTitle()).orElse("unknown");
+            VERSION = Optional.ofNullable(Application.class.getPackage().getImplementationVersion()).orElse("unknown");
         } catch (NullPointerException e) {
             error.println("load failed");
             e.printStackTrace();
