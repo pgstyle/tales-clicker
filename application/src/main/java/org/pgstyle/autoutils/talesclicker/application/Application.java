@@ -158,6 +158,10 @@ public final class Application {
      */
     public static void log(RenderedImage image, String target) {
         if (Configuration.getConfig().isLogEnabled() && Configuration.getConfig().isCaptchaLogged() && Application.LOG_LEVEL.value() <= Level.DEBUG.value()) {
+            if (Objects.isNull(image)) {
+                Application.log(Level.WARN, "null captcha image, skip logging captcha");
+                return;
+            }
             target += ".png";
             Application.log(Level.DEBUG, "store captcha text to \"%s\"", target);
             try {

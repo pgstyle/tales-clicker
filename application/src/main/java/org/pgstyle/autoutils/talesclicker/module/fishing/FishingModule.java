@@ -2,10 +2,6 @@ package org.pgstyle.autoutils.talesclicker.module.fishing;
 
 import java.awt.Point;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -17,8 +13,6 @@ import org.pgstyle.autoutils.talesclicker.application.AppUtils;
 import org.pgstyle.autoutils.talesclicker.application.Application;
 import org.pgstyle.autoutils.talesclicker.application.Application.Level;
 import org.pgstyle.autoutils.talesclicker.application.Configuration;
-import org.pgstyle.autoutils.talesclicker.imagedb.Convolution;
-import org.pgstyle.autoutils.talesclicker.imagedb.ConvolutionMask;
 import org.pgstyle.autoutils.talesclicker.module.Environment;
 import org.pgstyle.autoutils.talesclicker.module.Module;
 import org.pgstyle.autoutils.talesclicker.module.ModuleControl;
@@ -46,27 +40,33 @@ public final class FishingModule implements Module {
         return true;
     }
 
-    private static FishingCapture takCapture() {
+    private static FishingCapture takeCapture() {
         return FishingCapture.fromImage(Actions.getCapturer().capture());
+    }
+
+    private void actionDelay() {
+        Actions.getIdler().idle(this.actionDelay);
     }
 
     @Override
     public ModuleControl execute() {
         Application.log(Level.INFO, "start check fishing");
-        FishingCapture capture = FishingModule.takCapture();
+        FishingCapture capture = FishingModule.takeCapture();
         // start fishing if not started yet, then wait long delay
         if (!this.collectable(capture) && !this.started(capture)) {
             Application.log(Level.INFO, "fishing not started yet, try start fishing");
             this.startFishing(capture);
-            capture = FishingModule.takCapture();
+            this.actionDelay();
+            capture = FishingModule.takeCapture();
             if (this.started(capture)) {
                 Application.log(Level.DEBUG, "fishing started successfully");
+                Application.log(Level.INFO, "fishing check skipped, wait %d seconds for next execution", this.longDelay / 1000);
+                return ModuleControl.next(this.longDelay);
             }
             else {
-                Application.log(Level.WARN, "cannot start fishing");
+                Application.log(Level.WARN, "cannot start fishing, wait %d seconds for next execution", this.shortDelay / 1000);
+                return ModuleControl.next(this.shortDelay);
             }
-            Application.log(Level.INFO, "fishing check skipped, wait %d seconds for next execution", this.longDelay / 1000);
-            return ModuleControl.next(this.longDelay);
         }
         // check again after short delay (default 10 sec) if not collectable yet
         if (!this.collectable(capture)) {
@@ -76,6 +76,7 @@ public final class FishingModule implements Module {
         // collectable fish !!!
         Application.log(Level.INFO, "there are collectable fishes");
         this.confirm(capture);
+        this.actionDelay();
         // stop fishing
         Application.log(Level.INFO, "fishing is started, stop fishing before collection");
         if (this.started(capture)) {
@@ -84,11 +85,13 @@ public final class FishingModule implements Module {
         // click collect fish, take new capture for send home button
         Application.log(Level.INFO, "collect fishes");
         this.collectFish(capture);
-        capture = FishingModule.takCapture();
+        this.actionDelay();
+        capture = FishingModule.takeCapture();
         // click send home, take new capture for fish captcha
         Application.log(Level.INFO, "send fishes");
         this.sendFish(capture);
-        capture = FishingModule.takCapture();
+        this.actionDelay();
+        capture = FishingModule.takeCapture();
         Application.log(Level.INFO, "solve fish captchas");
         int[] fishes = this.checkFishCaptcha(capture);
         if (fishes[0] < 0) {
@@ -102,8 +105,13 @@ public final class FishingModule implements Module {
         Application.log(check, "captchas/" + seqNo);
         this.selectFish(capture, fishes[0]);
         this.selectFish(capture, fishes[1]);
-        capture = FishingModule.takCapture();
-        this.confirm(capture);
+        this.actionDelay();
+        capture = FishingModule.takeCapture();
+        if (!this.confirm(capture)) {
+            this.actionDelay();
+            Actions.getTyper().type("ENTER");
+        }
+        this.startFishing(capture);
         Application.log(Level.INFO, "fishing check finished, wait %d seconds for next execution", this.longDelay / 1000);
         return ModuleControl.next(this.longDelay);
     }

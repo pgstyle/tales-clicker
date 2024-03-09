@@ -3,7 +3,6 @@ package org.pgstyle.autoutils.talesclicker.module.fishing;
 import java.awt.Color;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,7 +17,6 @@ import org.pgstyle.autoutils.talesclicker.application.Application;
 import org.pgstyle.autoutils.talesclicker.application.Application.Level;
 import org.pgstyle.autoutils.talesclicker.imagedb.Capture;
 import org.pgstyle.autoutils.talesclicker.imagedb.Stencil;
-import org.pgstyle.autoutils.talesclicker.module.captcha.CaptchaCapture;
 
 public class FishingCapture extends Capture {
 
@@ -128,7 +126,7 @@ public class FishingCapture extends Capture {
      *         button in the screenshot
      */
     public Point findStartOffset() {
-        return this.getPointsOffset(FishingCapture.START_STENCIL);
+        return this.getPointsOffset(FishingCapture.START_STENCIL, 6 / 256f);
     }
 
     /**
@@ -138,7 +136,7 @@ public class FishingCapture extends Capture {
      *         button in the screenshot
      */
     public Point findStopOffset() {
-        return this.getPointsOffset(FishingCapture.STOP_STENCIL);
+        return this.getPointsOffset(FishingCapture.STOP_STENCIL, 6 / 256f);
     }
 
     /**
@@ -149,7 +147,7 @@ public class FishingCapture extends Capture {
      *         net button in the screenshot
      */
     public Point findCollectOffset() {
-        return this.getPointsOffset(FishingCapture.COLLECT_STENCIL);
+        return this.getPointsOffset(FishingCapture.COLLECT_STENCIL, 6 / 256f);
     }
 
     /**
@@ -159,7 +157,7 @@ public class FishingCapture extends Capture {
      *         in the screenshot
      */
     public Point findSendOffset() {
-        return this.getPointsOffset(FishingCapture.SEND_STENCIL);
+        return this.getPointsOffset(FishingCapture.SEND_STENCIL, 6 / 256f);
     }
 
     /**
@@ -169,7 +167,7 @@ public class FishingCapture extends Capture {
      *         in the screenshot
      */
     public Point findConfirmOffset() {
-        return this.getPointsOffset(FishingCapture.CONFIRM_STENCIL);
+        return this.getPointsOffset(FishingCapture.CONFIRM_STENCIL, 6 / 256f);
     }
 
     /**
@@ -179,7 +177,7 @@ public class FishingCapture extends Capture {
      *         not exists in the screenshot
      */
     public Point findCaptchaOffset() {
-        return this.getPointsOffset(FishingCapture.CAPTCHA_STENCIL);
+        return this.getPointsOffset(FishingCapture.CAPTCHA_STENCIL, 6 / 256f);
     }
 
     /**
@@ -190,7 +188,7 @@ public class FishingCapture extends Capture {
      *         exists in the screenshot
      */
     public Point findFishOffset(int index) {
-        return this.getPointsOffset(FishingCapture.FISH_SAMPLE_STENCILS.get(index));
+        return this.getPointsOffset(FishingCapture.FISH_SAMPLE_STENCILS.get(index), 6 / 256f);
     }
 
     /**
@@ -200,7 +198,7 @@ public class FishingCapture extends Capture {
      *         not exists in the screenshot
      */
     public Point findFishButtonOffset(int index) {
-        return this.getPointsOffset(FishingCapture.FISH_BUTTON_STENCILS.get(index));
+        return this.getPointsOffset(FishingCapture.FISH_BUTTON_STENCILS.get(index), 6 / 256f);
     }
 
     /**
