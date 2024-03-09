@@ -1,7 +1,10 @@
 package org.pgstyle.autoutils.talesclicker.module.captcha;
 
+import java.awt.Color;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Objects;
 
 import org.pgstyle.autoutils.talesclicker.imagedb.Capture;
@@ -15,6 +18,9 @@ import org.pgstyle.autoutils.talesclicker.imagedb.Stencil;
  * @author PGKan
  */
 public final class FullCapture extends Capture {
+
+    /** Point reference of the captcha dialog. */
+    private static final Map<Point, Color> CAPTCHA_STENCIL = Collections.unmodifiableMap(Stencil.loadReference("./imagedb/point/captcha.list"));
 
     /**
      * Create a capture object from an image.
@@ -59,7 +65,7 @@ public final class FullCapture extends Capture {
      *         in the screenshot
      */
     public Point findOffset() {
-        return this.getPointsOffset(Stencil.CAPTCHA_STENCIL);
+        return this.getPointsOffset(FullCapture.CAPTCHA_STENCIL, 6 / 256f);
     }
 
 }

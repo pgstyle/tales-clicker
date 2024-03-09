@@ -78,7 +78,7 @@ public final class Configuration {
      *         otherwise
      */
     public boolean isLogEnabled() {
-        return Boolean.parseBoolean(this.properties.getProperty("application.log.enable"));
+        return Boolean.parseBoolean(this.properties.getProperty("application.log.enable", "true"));
     }
 
     /**
@@ -87,7 +87,7 @@ public final class Configuration {
      * @return the application logging level
      */
     public Level getLoggingLevel() {
-        return Level.valueOf(this.properties.getProperty("application.log.level"));
+        return Level.valueOf(this.properties.getProperty("application.log.level", "DEBUG"));
     }
 
     /**
@@ -97,7 +97,7 @@ public final class Configuration {
      *         {@code false} otherwise
      */
     public boolean isCaptchaLogged() {
-        return Boolean.parseBoolean(this.properties.getProperty("application.log.captcha"));
+        return Boolean.parseBoolean(this.properties.getProperty("application.log.captcha", "true"));
     }
 
     /**
@@ -106,8 +106,18 @@ public final class Configuration {
      * @return the timing sequence (millisecond)
      */
     public int[] getClickTiming() {
-        String[] raw = this.properties.getProperty("application.action.click.timing").split(",");
+        String[] raw = this.properties.getProperty("application.action.click.timing", "250,50,100").split(",");
         return new int[] {Integer.parseInt(raw[0]), Integer.parseInt(raw[1]), Integer.parseInt(raw[2])};
+    }
+
+    /**
+     * Get the action timing of capturing action.
+     *
+     * @return the timing sequence (millisecond)
+     */
+    public int[] getCaptureTiming() {
+        String[] raw = this.properties.getProperty("application.action.capture.timing", "250").split(",");
+        return new int[] {Integer.parseInt(raw[0])};
     }
 
     /**
@@ -116,7 +126,7 @@ public final class Configuration {
      * @return the timing sequence (millisecond)
      */
     public int[] getTypeTiming() {
-        String[] raw = this.properties.getProperty("application.action.type.timing").split(",");
+        String[] raw = this.properties.getProperty("application.action.type.timing", "120,500").split(",");
         return new int[] {Integer.parseInt(raw[0]), Integer.parseInt(raw[1])};
     }
 
@@ -126,7 +136,7 @@ public final class Configuration {
      * @return the area sequence
      */
     public int[] getCaptureArea() {
-        String raw = this.properties.getProperty("application.action.capture.area");
+        String raw = this.properties.getProperty("application.action.capture.area", "FULL");
         int[] area;
         if ("FULL".equalsIgnoreCase(raw)) {
             Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
@@ -144,7 +154,7 @@ public final class Configuration {
      * @return {@code true} if the module is enabled; or {@code false} otherwise
      */
     public boolean isModuleEnabled(String name) {
-        return Boolean.parseBoolean(this.properties.getProperty("application.module." + name + ".enable"));
+        return Boolean.parseBoolean(this.properties.getProperty("application.module." + name + ".enable", "false"));
     }
 
     /**
@@ -153,7 +163,7 @@ public final class Configuration {
      * @return the module count
      */
     public int getModuleCount(String name) {
-        String[] args = Optional.ofNullable(this.properties.getProperty("application.module." + name + ".args")).map(s -> s.split(";")).orElse(new String[0]);
+        String[] args = Optional.ofNullable(this.properties.getProperty("application.module." + name + ".args", "")).map(s -> s.split(";")).orElse(new String[0]);
         return Math.max(args.length, 1);
     }
 
@@ -163,7 +173,7 @@ public final class Configuration {
      * @return the module arguments
      */
     public String[] getModuleArgs(String name, int index) {
-        String[] args = Optional.ofNullable(this.properties.getProperty("application.module." + name + ".args")).map(s -> s.split(";")).orElse(new String[0]);
+        String[] args = Optional.ofNullable(this.properties.getProperty("application.module." + name + ".args", "")).map(s -> s.split(";")).orElse(new String[0]);
         return args.length > index ? args[index].split(",") : new String[0];
     }
 

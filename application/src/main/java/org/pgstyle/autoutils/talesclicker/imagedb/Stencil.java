@@ -21,13 +21,7 @@ import org.pgstyle.autoutils.talesclicker.application.AppUtils;
  * @author PGKan
  */
 public final class Stencil {
-
-    /** Point reference of the captcha dialog. */
-    public static final Map<Point, Color> CAPTCHA_STENCIL = Collections.unmodifiableMap(Stencil.loadReference("./imagedb/point/captcha.list"));
-    /** Point reference of the error dialog. */
-    public static final Map<Point, Color> ERROR_STENCIL = Collections.unmodifiableMap(Stencil.loadReference("./imagedb/point/error.list"));
-
-    private static Map<Point, Color> loadReference(String name) {
+    public static Map<Point, Color> loadReference(String name) {
         Properties list = new Properties();
         try {
             list.load(AppUtils.getResource(name));

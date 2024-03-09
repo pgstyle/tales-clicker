@@ -1,7 +1,10 @@
 package org.pgstyle.autoutils.talesclicker.module.captcha;
 
+import java.awt.Color;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 
 import org.pgstyle.autoutils.talesclicker.imagedb.Capture;
@@ -14,6 +17,9 @@ import org.pgstyle.autoutils.talesclicker.imagedb.Stencil;
  * @author PGKan
  */
 public final class ErrorCapture extends Capture {
+
+    /** Point reference of the error dialog. */
+    private static final Map<Point, Color> ERROR_STENCIL = Collections.unmodifiableMap(Stencil.loadReference("./imagedb/point/error.list"));
 
     /**
      * Create a capture object from an image.
@@ -36,7 +42,7 @@ public final class ErrorCapture extends Capture {
      *         is not found
      */
     public Point findOffset() {
-        Point offset = this.getPointsOffset(Stencil.ERROR_STENCIL);
+        Point offset = this.getPointsOffset(ErrorCapture.ERROR_STENCIL);
         Optional.ofNullable(offset).ifPresent(o -> o.translate(36, 15));
         return offset;
     }

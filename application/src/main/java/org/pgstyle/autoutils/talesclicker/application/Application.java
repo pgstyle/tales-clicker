@@ -64,8 +64,8 @@ public final class Application {
         // load application info from MANIFEST.MF
         console.println("fetch application informations...");
         try {
-            Objects.requireNonNull(APPLICATION = Application.class.getPackage().getImplementationTitle(), "application");
-            Objects.requireNonNull(VERSION = Application.class.getPackage().getImplementationVersion(), "version");
+            APPLICATION = Optional.ofNullable(Application.class.getPackage().getImplementationTitle()).orElse("unknown");
+            VERSION = Optional.ofNullable(Application.class.getPackage().getImplementationVersion()).orElse("unknown");
         } catch (NullPointerException e) {
             error.println("load failed");
             e.printStackTrace();
@@ -158,6 +158,10 @@ public final class Application {
      */
     public static void log(RenderedImage image, String target) {
         if (Configuration.getConfig().isLogEnabled() && Configuration.getConfig().isCaptchaLogged() && Application.LOG_LEVEL.value() <= Level.DEBUG.value()) {
+            if (Objects.isNull(image)) {
+                Application.log(Level.WARN, "null captcha image, skip logging captcha");
+                return;
+            }
             target += ".png";
             Application.log(Level.DEBUG, "store captcha text to \"%s\"", target);
             try {

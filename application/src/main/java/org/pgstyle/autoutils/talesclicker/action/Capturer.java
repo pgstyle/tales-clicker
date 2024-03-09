@@ -21,10 +21,13 @@ public final class Capturer {
     Capturer(Robot robot) {
         this.robot = robot;
         this.defaultArea = Configuration.getConfig().getCaptureArea();
+        int[] timing = Configuration.getConfig().getCaptureTiming();
+        this.moveDelay = timing[0];
     }
 
     private final Robot robot;
     private final int[] defaultArea;
+    private final int moveDelay;
 
     public BufferedImage capture() {
         return this.capture(defaultArea[0], defaultArea[1], defaultArea[2], defaultArea[3]);
@@ -50,6 +53,7 @@ public final class Capturer {
             // Move cursor to buttom-right of the capture area, such that the
             // cursor body is outside of the area.
             this.robot.mouseMove(x + width, y + height);
+            Actions.getIdler().idle(this.moveDelay);
             BufferedImage capture = this.robot.createScreenCapture(area);
             // revert the cursor position
             this.robot.mouseMove(original.x, original.y);
