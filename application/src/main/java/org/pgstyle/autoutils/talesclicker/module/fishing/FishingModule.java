@@ -60,23 +60,37 @@ public final class FishingModule implements Module {
             capture = FishingModule.takeCapture();
             if (this.started(capture)) {
                 Application.log(Level.DEBUG, "fishing started successfully");
-                Application.log(Level.INFO, "fishing check skipped, wait %d seconds for next execution", this.longDelay / 1000);
+                Application.log(Level.INFO, "fishing check skipped, wait %d seconds for next execution",
+                        this.longDelay / 1000);
                 return ModuleControl.next(this.longDelay);
-            }
-            else {
-                Application.log(Level.WARN, "cannot start fishing, wait %d seconds for next execution", this.shortDelay / 1000);
+            } else {
+                Application.log(Level.WARN, "cannot start fishing, wait %d seconds for next execution",
+                        this.shortDelay / 1000);
                 return ModuleControl.next(this.shortDelay);
             }
         }
-        // check again after short delay (default 10 sec) if not collectable yet
+        // check again after short delay (default 60 sec) if not collectable yet
         if (!this.collectable(capture)) {
-            Application.log(Level.INFO, "no collectable fish yet, wait %d seconds for next execution", this.shortDelay / 1000);
+            Application.log(Level.INFO, "no collectable fish yet, wait %d seconds for next execution",
+                    this.shortDelay / 1000);
             return ModuleControl.next(this.shortDelay);
         }
         // collectable fish !!!
         Application.log(Level.INFO, "there are collectable fishes");
-        this.confirm(capture);
-        this.actionDelay();
+        if (Objects.nonNull(capture.findItemTimeoutOffset())
+                && !this.findAndClick(capture, FishingCapture::findCloseOffset)) {
+            this.actionDelay();
+            Actions.getTyper().type("ESC");
+            this.actionDelay();
+        }
+        capture = FishingModule.takeCapture();
+        if (!this.confirm(capture)) {
+            this.actionDelay();
+            Actions.getTyper().type("ENTER");
+            this.actionDelay();
+            Actions.getTyper().type("ESC");
+            this.actionDelay();
+        }
         // stop fishing
         Application.log(Level.INFO, "fishing is started, stop fishing before collection");
         if (this.started(capture)) {
@@ -95,7 +109,8 @@ public final class FishingModule implements Module {
         Application.log(Level.INFO, "solve fish captchas");
         int[] fishes = this.checkFishCaptcha(capture);
         if (fishes[0] < 0) {
-            Application.log(Level.ERROR, "fish captcha solve failed, wait %d seconds for next execution", this.shortDelay / 1000);
+            Application.log(Level.ERROR, "fish captcha solve failed, wait %d seconds for next execution",
+                    this.shortDelay / 1000);
             return ModuleControl.next(this.shortDelay);
         }
         String seqNo = AppUtils.timestamp();
@@ -112,7 +127,8 @@ public final class FishingModule implements Module {
             Actions.getTyper().type("ENTER");
         }
         this.startFishing(capture);
-        Application.log(Level.INFO, "fishing check finished, wait %d seconds for next execution", this.longDelay / 1000);
+        Application.log(Level.INFO, "fishing check finished, wait %d seconds for next execution",
+                this.longDelay / 1000);
         return ModuleControl.next(this.longDelay);
     }
 
@@ -155,7 +171,8 @@ public final class FishingModule implements Module {
         for (int i = 0; i < 10; i++) {
             points[i].y = i;
         }
-        return Stream.of(points).sorted((a, b) -> Integer.compare(a.x, b.x)).skip(8).mapToInt(p -> p.x >= 0 ? p.y : -1).toArray();
+        return Stream.of(points).sorted((a, b) -> Integer.compare(a.x, b.x)).skip(8).mapToInt(p -> p.x >= 0 ? p.y : -1)
+                .toArray();
     }
 
     private boolean selectFish(FishingCapture capture, int index) {

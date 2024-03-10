@@ -46,6 +46,10 @@ public class FishingCapture extends Capture {
     private static final List<Map<Point, Color>> FISH_BUTTON_STENCILS;
     /** Point reference of the fish sample. */
     private static final List<Map<Point, Color>> FISH_SAMPLE_STENCILS;
+    /** Point reference of the item timeout dialog. */
+    private static final Map<Point, Color> ITEM_TIMEOUT_STENCIL;
+    /** Point reference of the close button. */
+    private static final Map<Point, Color> CLOSE_STENCIL;
 
     static {
         BufferedImage image = null;
@@ -90,7 +94,7 @@ public class FishingCapture extends Capture {
             Application.log(Level.ERROR, "cannot load stencil", e);
             throw new IllegalStateException("cannot initialise", e);
         }
-        CONFIRM_STENCIL = Collections.unmodifiableMap(Stencil.fromImage(image));
+        CONFIRM_STENCIL = Collections.unmodifiableMap(Stencil.loadReference("./imagedb/point/error.list"));
         List<Map<Point, Color>> list = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             try {
@@ -113,6 +117,20 @@ public class FishingCapture extends Capture {
             list.add(Collections.unmodifiableMap(Stencil.fromImage(image)));
         }
         FISH_SAMPLE_STENCILS = Collections.unmodifiableList(list);
+        try {
+            image = ImageIO.read(AppUtils.getResource("./imagedb/mask/item-timeout.png"));
+        } catch (IOException e) {
+            Application.log(Level.ERROR, "cannot load stencil", e);
+            throw new IllegalStateException("cannot initialise", e);
+        }
+        ITEM_TIMEOUT_STENCIL = Collections.unmodifiableMap(Stencil.fromImage(image));
+        try {
+            image = ImageIO.read(AppUtils.getResource("./imagedb/button/close.png"));
+        } catch (IOException e) {
+            Application.log(Level.ERROR, "cannot load stencil", e);
+            throw new IllegalStateException("cannot initialise", e);
+        }
+        CLOSE_STENCIL = Collections.unmodifiableMap(Stencil.fromImage(image));
     }
 
     protected FishingCapture(BufferedImage image) {
@@ -199,6 +217,26 @@ public class FishingCapture extends Capture {
      */
     public Point findFishButtonOffset(int index) {
         return this.getPointsOffset(FishingCapture.FISH_BUTTON_STENCILS.get(index), 6 / 256f);
+    }
+
+    /**
+     * Get the offset of the item timeout dialog in the screenshot capture.
+     *
+     * @return the offset point; or {@code null} if there is no item timeout
+     *         dialog in the screenshot
+     */
+    public Point findItemTimeoutOffset() {
+        return this.getPointsOffset(FishingCapture.ITEM_TIMEOUT_STENCIL, 6 / 256f);
+    }
+
+    /**
+     * Get the offset of the close button in the screenshot capture.
+     *
+     * @return the offset point; or {@code null} if there is no close button
+     *         in the screenshot
+     */
+    public Point findCloseOffset() {
+        return this.getPointsOffset(FishingCapture.CLOSE_STENCIL, 6 / 256f);
     }
 
     /**
