@@ -20,7 +20,7 @@ public final class DisconnectDetector implements Detector {
 
     @Override
     public String message() {
-        return AppUtils.hostname() + " is down";
+        return "[" + AppUtils.hostname() + "] 跑Online線已斷";
     }
 
 }
