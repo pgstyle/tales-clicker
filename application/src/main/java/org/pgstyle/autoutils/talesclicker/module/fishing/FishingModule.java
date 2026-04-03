@@ -140,7 +140,7 @@ public final class FishingModule implements Module {
     private boolean findAndClick(FishingCapture capture, Function<FishingCapture, Point> offset) {
         Point button = offset.apply(capture);
         if (Objects.nonNull(button)) {
-            button.translate(20, 20);
+            button.translate(15, 10);
             Actions.getClicker().click(button);
             Actions.getIdler().idle(this.actionDelay);
         }
