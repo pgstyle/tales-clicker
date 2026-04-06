@@ -9,9 +9,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Queue;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.pgstyle.autoutils.talesclicker.application.AppUtils;
 import org.pgstyle.autoutils.talesclicker.application.Application;
@@ -182,7 +184,18 @@ public final class ModuleManager implements Module {
                 if (Objects.isNull(runner)) {
                     // load module, instantiate module and its runner
                     Application.log(Level.INFO, "Create module runner for [%s]", entry.getKey().getSimpleName());
-                    runners.set(i, ModuleRunner.of(entry.getKey(), this.env, Configuration.getConfig().getModuleArgs(this.moduleNames.get(entry.getKey()), i)));
+                    runners.set(i
+                        ,
+                        ModuleRunner.of(
+                            entry.getKey(), this.env,
+                            Configuration.getConfig().getModuleArgs(this.moduleNames.get(entry.getKey()), i),
+                            Optional.ofNullable(Configuration.getConfig().getModuleProperty(this.moduleNames.get(entry.getKey()), "locks"))
+                                .map(l -> l.split(","))
+                                .map(Stream::of)
+                                .orElseGet(Stream::empty)
+                                .toArray(String[]::new)
+                        )
+                    );
                 }
                 else if (runner.getRunnerState() == State.INIT) {
                     // start module runner thread
@@ -198,7 +211,7 @@ public final class ModuleManager implements Module {
             if (!this.modules.containsKey(entry.getKey())) {
                 this.modules.put(entry.getKey(), new ArrayList<>());
             }
-            this.modules.get(entry.getKey()).add(ModuleRunner.of(entry.getKey(), this.env, entry.getValue()));
+            this.modules.get(entry.getKey()).add(ModuleRunner.of(entry.getKey(), this.env, entry.getValue(), new String[0]));
         }
         // process shutdown request
         while (!this.shutdown.isEmpty()) {

@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.pgstyle.autoutils.talesclicker.application.Application;
 import org.pgstyle.autoutils.talesclicker.application.Application.Level;
@@ -52,9 +53,13 @@ public final class ModuleRunner extends Thread {
      * @param args the arguments for initialising the module
      * @return a module runner
      */
-    public static ModuleRunner of(Class<? extends Module> module, Environment env, String[] args) {
+    public static ModuleRunner of(Class<? extends Module> module, Environment env, String[] args, String[] locks) {
         try {
-            return new ModuleRunner(module.newInstance(), env, Optional.ofNullable(args).orElseGet(() -> new String[0]));
+            return new ModuleRunner(
+                module.newInstance(), env,
+                Optional.ofNullable(args).orElseGet(() -> new String[0]),
+                Optional.ofNullable(locks).orElseGet(() -> new String[0])
+            );
         } catch (ReflectiveOperationException e) {
             Application.log(Level.ERROR, "failed to instantiate module: %s", e);
             e.printStackTrace();
@@ -62,7 +67,7 @@ public final class ModuleRunner extends Thread {
         }
     }
 
-    private ModuleRunner(Module module, Environment env, String[] args) {
+    private ModuleRunner(Module module, Environment env, String[] args, String[] locks) {
         this.setName(module.getClass().getSimpleName() + "-" + ModuleRunner.getSequence(module.getClass()));
         Application.log(Level.DEBUG, "create module runner [%s]", this.getName());
         if (args.length > 0) {
@@ -72,6 +77,7 @@ public final class ModuleRunner extends Thread {
         this.module = module;
         this.env = env;
         this.args = args;
+        this.locks = locks;
         this.state = State.INIT;
         this.signal = Signal.TERMINATE;
     }
@@ -79,6 +85,7 @@ public final class ModuleRunner extends Thread {
     private final Module module;
     private final Environment env;
     private final String[] args;
+    private final String[] locks;
     private State state;
     private Signal signal;
 
@@ -183,6 +190,7 @@ public final class ModuleRunner extends Thread {
     private ModuleControl execute() {
         ModuleControl control = ModuleControl.next(ModuleRunner.RETRY_TIMEOUT);
         try {
+            this.env.getLocks(this.locks);
             Application.log(Level.TRACE, "%s - start execute", this.module.getClass().getSimpleName());
             control = this.module.execute();
             Application.log(Level.TRACE, "%s - finish execute", this.module.getClass().getSimpleName());
@@ -190,6 +198,9 @@ public final class ModuleRunner extends Thread {
         catch (RuntimeException e) {
             Application.log(Level.ERROR, "error when executing module, %s", e);
             e.printStackTrace();
+        }
+        finally {
+            this.env.releaseLocks(this.locks);
         }
         if (Objects.isNull(control) || control.getDelay() < 0) {
             Application.log(Level.ERROR, "illegal module control: %s", control);

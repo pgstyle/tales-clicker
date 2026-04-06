@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.Semaphore;
 
 import org.pgstyle.autoutils.talesclicker.application.AppUtils;
 import org.pgstyle.autoutils.talesclicker.application.Application;
@@ -257,6 +258,46 @@ public final class Environment {
             return this.global;
         }
         return this.scopes.computeIfAbsent(scope, s -> new HashMap<>(Collections.singletonMap("scope", scope.getName())));
+    }
+
+    private static final Map<String, Semaphore> locks = Collections.synchronizedMap(new HashMap<>());
+
+    public synchronized void getLocks(String[] names) {
+        if (names.length == 0) {
+            return;
+        }
+        boolean available = false;
+        while (!available) {
+            Application.log(Level.DEBUG, "try acquire %s locks", names.length);
+            available = true;
+            for (String name : names) {
+                available &= Environment.locks.compute(name, (n, s) -> Objects.isNull(s) ? new Semaphore(1) : s).availablePermits() > 0;
+            }
+            try {
+                if (!available) {
+                    Application.log(Level.DEBUG, "lock not available, wait...");
+                    this.wait();
+                }
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        Application.log(Level.DEBUG, "locks ready");
+        for (String name : names) {
+            Environment.locks.get(name).acquireUninterruptibly();
+        }
+    }
+
+    public synchronized void releaseLocks(String[] names) {
+        if (names.length == 0) {
+            return;
+        }
+        Application.log(Level.DEBUG, "release %s locks", names.length);
+        for (String name : names) {
+            Environment.locks.get(name).release();
+        }
+        this.notifyAll();
     }
 
 }

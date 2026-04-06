@@ -3,9 +3,17 @@ package org.pgstyle.autoutils.talesclicker.imagedb;
 import java.awt.Color;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import javax.imageio.ImageIO;
+
+import org.pgstyle.autoutils.talesclicker.application.AppUtils;
+import org.pgstyle.autoutils.talesclicker.application.Application;
+import org.pgstyle.autoutils.talesclicker.application.Application.Level;
 
 /**
  * Screen capture container with subpicture and point offset utility.
@@ -14,6 +22,15 @@ import java.util.Map;
  * @author PGKan
  */
 public class Capture {
+
+    public static Map<Point, Color> loadImageAsStencil(String path) {
+        try {
+            return Collections.unmodifiableMap(Stencil.fromImage(ImageIO.read(AppUtils.getResource(path))));
+        } catch (IOException e) {
+            Application.log(Level.ERROR, "cannot load stencil", e);
+            throw new IllegalStateException("cannot initialise", e);
+        }
+    }
 
     protected Capture(BufferedImage image) {
         this.image = image;

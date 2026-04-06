@@ -192,7 +192,7 @@ public final class Application {
         Application.log(Level.INFO, "Starting application: %s/version %s", Application.name(), Application.version());
         // from 1.0, use module-environment-runner model
         // the module manager will load and start all modules
-        ModuleRunner manager = ModuleRunner.of(ModuleManager.class, Environment.getInstance(), new String[0]);
+        ModuleRunner manager = ModuleRunner.of(ModuleManager.class, Environment.getInstance(), new String[0], new String[0]);
         manager.start();
         // shutdown hook for cleaning modules
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {

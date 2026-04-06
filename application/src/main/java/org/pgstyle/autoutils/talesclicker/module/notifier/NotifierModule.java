@@ -26,6 +26,7 @@ public final class NotifierModule implements Module {
     static {
         detectors = new HashMap<>();
         detectors.put("Disconnect", new DisconnectDetector());
+        detectors.put("DisconnectStarE", new DisconnectDetectorStarE());
         detectors.put(null, new NullDetector());
         notifiers = new HashMap<>();
         notifiers.put("Line", new LineNotifier());
@@ -64,6 +65,7 @@ public final class NotifierModule implements Module {
 
     @Override
     public ModuleControl execute() {
+        System.out.println("notifier");
         if (this.detector.detect()) {
             Application.log(Level.INFO, "%s detected", this.event);
             if (this.notifier.notifies(this.detector.message())) {

@@ -27,10 +27,12 @@ import org.pgstyle.autoutils.talesclicker.imagedb.Stencil;
  */
 public final class DisconnectCapture extends Capture {
 
-    private static final Pattern LOADABLE = Pattern.compile("./imagedb/disconnect/disconnect-.*\\.png");
+    private static final Pattern LOADABLE = Pattern.compile("./imagedb/disconnect/disconnect-\\d+\\.png");
     
     /** All disconnect dialog candidate for testing the capture. */
     private static final List<Map<Point, Color>> TEXTS = DisconnectCapture.loadTexts();
+
+    private static final Map<Point, Color> CONFIRM = Capture.loadImageAsStencil("./imagedb/disconnect/disconnect-confirm.png");
 
 
     private static List<Map<Point, Color>> loadTexts() {
@@ -75,7 +77,8 @@ public final class DisconnectCapture extends Capture {
      */
     public boolean isDisconnected() {
         // check all candidates
-        return DisconnectCapture.TEXTS.stream().map(pc -> this.getPointsOffset(pc, 6f / 256)).anyMatch(Objects::nonNull);
+        return Objects.nonNull(this.getPointsOffset(DisconnectCapture.CONFIRM, 6f / 256))
+                && DisconnectCapture.TEXTS.stream().map(pc -> this.getPointsOffset(pc, 6f / 256)).anyMatch(Objects::nonNull);
     }
 
 }
