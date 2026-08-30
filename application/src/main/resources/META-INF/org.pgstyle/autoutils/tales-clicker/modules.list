@@ -2,4 +2,6 @@ captcha=org.pgstyle.autoutils.talesclicker.module.captcha.CaptchaModule
 notifier=org.pgstyle.autoutils.talesclicker.module.notifier.NotifierModule
 fishing=org.pgstyle.autoutils.talesclicker.module.fishing.FishingModule
 daily=org.pgstyle.autoutils.talesclicker.module.daily.DailyModule
+running=org.pgstyle.autoutils.talesclicker.module.running.RunningModule
+event=org.pgstyle.autoutils.talesclicker.module.event.EventModule
 testing=org.pgstyle.autoutils.talesclicker.module.testing.TestingModule

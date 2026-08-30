@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import org.pgstyle.autoutils.talesclicker.application.Application;
 import org.pgstyle.autoutils.talesclicker.application.Application.Level;
@@ -24,20 +25,72 @@ public final class Typer {
         int[] timing = Configuration.getConfig().getTypeTiming();
         this.pressDelay = timing[0];
         this.actionDelay = timing[1];
-        action = (r, k) -> {
+        action = k -> {
             Arrays.stream(k).forEach(c -> {
-                r.keyPress(c);
+                this.robot.keyPress(c);
                 Actions.getIdler().idle(this.pressDelay);
             });
-            Arrays.stream(k).forEach(r::keyRelease);
+            Arrays.stream(k).forEach(this.robot::keyRelease);
             Actions.getIdler().idle(this.actionDelay);
+        };
+        quickAction = k -> {
+            this.robot.keyPress(k);
+            Actions.getIdler().idle(this.pressDelay);
+            this.robot.keyRelease(k);
+        };
+        downAction = k -> {
+            this.robot.keyPress(k);
+            Actions.getIdler().idle(this.pressDelay);
+        };
+        upAction = k -> {
+            this.robot.keyRelease(k);
+            Actions.getIdler().idle(this.pressDelay);
         };
     }
 
     private final Robot robot;
-    private final BiConsumer<Robot, int[]> action;
+    private final Consumer<int[]> action;
+    private final Consumer<Integer> quickAction;
+    private final Consumer<Integer> downAction;
+    private final Consumer<Integer> upAction;
     private final int pressDelay;
     private final int actionDelay;
+
+    private int decodeKey(String key) {
+        switch (key) {
+            case "CTRL":
+                return KeyEvent.VK_CONTROL;
+            case "SHIFT":
+                return KeyEvent.VK_SHIFT;
+            case "ALT":
+                return KeyEvent.VK_ALT;
+            case "SUPER":
+            case "WIN":
+                return KeyEvent.VK_WINDOWS;
+            case "ENTER":
+                return KeyEvent.VK_ENTER;
+            case "ESC":
+                return KeyEvent.VK_ESCAPE;
+            case "SPACE":
+                return KeyEvent.VK_SPACE;
+            case "LEFT":
+                return KeyEvent.VK_LEFT;
+            case "DOWN":
+                return KeyEvent.VK_DOWN;
+            case "UP":
+                return KeyEvent.VK_UP;
+            case "RIGHT":
+                return KeyEvent.VK_RIGHT;
+            default:
+                if (key.startsWith("NUM")) {
+                    return KeyEvent.VK_NUMPAD0 + (key.charAt(3) - 48);
+                } else if (key.startsWith("F") && key.length() > 1) {
+                    return KeyEvent.VK_F1 + (key.charAt(1) - 49);
+                } else {
+                    return key.charAt(0);
+                }
+        }
+    }
 
     /**
      * Type the specified key, with key modifier support.
@@ -50,44 +103,30 @@ public final class Typer {
             String[] keys = key.toUpperCase().split("[+\\-]");
             List<Integer> codes = new ArrayList<>();
             for (String k : keys) {
-                switch (k) {
-                case "CTRL":
-                    codes.add(KeyEvent.VK_CONTROL);
-                    break;
-                case "SHIFT":
-                    codes.add(KeyEvent.VK_SHIFT);
-                    break;
-                case "ALT":
-                    codes.add(KeyEvent.VK_ALT);
-                    break;
-                case "SUPER":
-                case "WIN":
-                    codes.add(KeyEvent.VK_WINDOWS);
-                    break;
-                case "ENTER":
-                    codes.add(KeyEvent.VK_ENTER);
-                    break;
-                case "ESC":
-                    codes.add(KeyEvent.VK_ESCAPE);
-                    break;
-                case "SPACE":
-                    codes.add(KeyEvent.VK_SPACE);
-                    break;
-                default:
-                    if (k.startsWith("NUM")) {
-                        codes.add(KeyEvent.VK_NUMPAD0 + (k.charAt(3) - 48));
-                    }
-                    else if (k.startsWith("F") && k.length() > 1) {
-                        codes.add(KeyEvent.VK_F1 + (k.charAt(1) - 49));
-                    }
-                    else {
-                        codes.add((int) k.charAt(0));
-                    }
-                    break;
-                }
+                codes.add(this.decodeKey(k));
             }
-            this.action.accept(this.robot, codes.stream().mapToInt(Integer::intValue).toArray());
+            this.action.accept(codes.stream().mapToInt(Integer::intValue).toArray());
         }
     }
 
+    public void quick(String key) {
+        synchronized (this.robot) {
+            Application.log(Level.DEBUG, "action.type.quick %s", key);
+            this.quickAction.accept(this.decodeKey(key));
+        }
+    }
+
+    public void down(String key) {
+        synchronized (this.robot) {
+            Application.log(Level.DEBUG, "action.type.down %s", key);
+            this.downAction.accept(this.decodeKey(key));
+        }
+    }
+
+    public void up(String key) {
+        synchronized (this.robot) {
+            Application.log(Level.DEBUG, "action.type.up %s", key);
+            this.upAction.accept(this.decodeKey(key));
+        }
+    }
 }
